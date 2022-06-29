@@ -6,22 +6,22 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.Socket;
 
-public class HTTPClient {
+public class WaitUntilAResponseReceived {
 
     private String host = "localhost";
     private int port = 8290;
 
     public static void main(String[] args) {
 
-        HTTPClient client = new HTTPClient();
+        WaitUntilAResponseReceived client = new WaitUntilAResponseReceived();
         client.run();
     }
 
-    HTTPClient() {
+    WaitUntilAResponseReceived() {
 
     }
 
-    HTTPClient(String host, int port) {
+    WaitUntilAResponseReceived(String host, int port) {
 
         this.host = host;
         this.port = port;
@@ -35,7 +35,7 @@ public class HTTPClient {
             Socket socket = new Socket(this.host, this.port);
 
             System.out.println("client started");
-            new HTTPClient.ClientThread(socket).start();
+            new WaitUntilAResponseReceived.ClientThread(socket).start();
         } catch (Exception ex) {
             ex.printStackTrace();
         }

@@ -19,7 +19,9 @@ hs_err_pid*
 *.settings
 *.project
 *.idea
-
+.DS_Store
+src/.DS_Store
+src/test/.DS_Store
 
 # ignore logs
 *.log
