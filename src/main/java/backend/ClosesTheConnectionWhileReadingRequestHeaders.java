@@ -6,7 +6,7 @@ import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-public class ClosesTheConnectionWhileReadingTheRequestBody {
+public class ClosesTheConnectionWhileReadingRequestHeaders {
 
     public static void main(String[] args) {
         try {
