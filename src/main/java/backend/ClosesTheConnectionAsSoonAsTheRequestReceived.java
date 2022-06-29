@@ -1,4 +1,7 @@
+package backend;
+
 import javax.net.ServerSocketFactory;
+import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -6,7 +9,7 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-public class Server {
+public class ClosesTheConnectionAsSoonAsTheRequestReceived {
 
     public static void main(String[] args) {
         try {
