@@ -7,7 +7,7 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-public class ClosesTheConnectionWhileSendingTheHeaders {
+public class ClosesTheConnectionWhileBackendSendingTheHeaders {
 
     public static void main(String[] args) {
         try {
