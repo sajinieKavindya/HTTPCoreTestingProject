@@ -16,7 +16,7 @@ public class SlowWriting {
         try {
             // Create a ServerSocket to listen on that port.
             ServerSocketFactory ssf = ServerSocketFactory.getDefault();
-            ServerSocket ss = ssf.createServerSocket(7005);
+            ServerSocket ss = ssf.createServerSocket(7000);
             ss.setReceiveBufferSize(3);
 
             // Now enter an infinite loop, waiting for & handling connections.
