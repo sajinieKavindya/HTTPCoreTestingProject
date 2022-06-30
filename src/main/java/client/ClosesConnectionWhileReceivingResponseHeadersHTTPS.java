@@ -1,25 +1,34 @@
 package client;
 
 import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.net.Socket;
+import java.security.KeyStore;
+
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
 
 public class ClosesConnectionWhileReceivingResponseHeadersHTTPS {
 
     private String host = "localhost";
-    private int port = 8290;
+    private int port = 8253;
 
     public static void main(String[] args) {
 
-        ClosesConnectionWhileReceivingResponseHeadersHTTPS
-                client = new ClosesConnectionWhileReceivingResponseHeadersHTTPS();
-//        for (int i = 0; i < 1000; i++) {
-        client.run();
-//        }
+        ClosesConnectionWhileReceivingResponseHeadersHTTPS client = new ClosesConnectionWhileReceivingResponseHeadersHTTPS();
+        for (int i = 0; i < 1000; i++) {
+            client.run();
+        }
     }
 
     ClosesConnectionWhileReceivingResponseHeadersHTTPS() {
@@ -32,16 +41,51 @@ public class ClosesConnectionWhileReceivingResponseHeadersHTTPS {
         this.port = port;
     }
 
+    // Create the and initialize the SSLContext
+    private SSLContext createSSLContext() {
+
+        try {
+            KeyStore keyStore = KeyStore.getInstance("JKS");
+            keyStore.load(new FileInputStream(
+                            "/Users/sulochana/Documents/WSO2/bin/test/wso2mi-4.0.0/repository/resources/security/wso2carbon.jks"),
+                    "wso2carbon".toCharArray());
+
+            // Create key manager
+            KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance("SunX509");
+            keyManagerFactory.init(keyStore, "wso2carbon".toCharArray());
+            KeyManager[] km = keyManagerFactory.getKeyManagers();
+
+            // Create trust manager
+            TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance("SunX509");
+            trustManagerFactory.init(keyStore);
+            TrustManager[] tm = trustManagerFactory.getTrustManagers();
+
+            // Initialize SSLContext
+            SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
+            sslContext.init(km, tm, null);
+
+            return sslContext;
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+
+        return null;
+    }
+
     // Start to run the server
     public void run() {
 
-        try {
-            // Create socket
-            Socket socket = new Socket(this.host, this.port);
-            socket.setSendBufferSize(12000);
+        SSLContext sslContext = this.createSSLContext();
 
-            System.out.println("client started");
-            new ClosesConnectionWhileReceivingResponseHeadersHTTPS.ClientThread(socket).start();
+        try {
+            // Create socket factory
+            SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
+
+            // Create socket
+            SSLSocket sslSocket = (SSLSocket) sslSocketFactory.createSocket(this.host, this.port);
+
+            System.out.println("SSL client started");
+            new ClientThread(sslSocket).start();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -50,19 +94,31 @@ public class ClosesConnectionWhileReceivingResponseHeadersHTTPS {
     // Thread handling the socket to server
     static class ClientThread extends Thread {
 
-        private Socket socket = null;
+        private SSLSocket sslSocket = null;
 
-        ClientThread(Socket socket) {
+        ClientThread(SSLSocket sslSocket) {
 
-            this.socket = socket;
+            this.sslSocket = sslSocket;
         }
 
         public void run() {
 
+            sslSocket.setEnabledCipherSuites(sslSocket.getSupportedCipherSuites());
+
             try {
+                // Start handshake
+                sslSocket.startHandshake();
+
+                // Get session after the connection is established
+                SSLSession sslSession = sslSocket.getSession();
+
+                System.out.println("SSLSession :");
+                System.out.println("\tProtocol : " + sslSession.getProtocol());
+                System.out.println("\tCipher suite : " + sslSession.getCipherSuite());
+
                 // Start handling application content
-                InputStream inputStream = socket.getInputStream();
-                OutputStream outputStream = socket.getOutputStream();
+                InputStream inputStream = sslSocket.getInputStream();
+                OutputStream outputStream = sslSocket.getOutputStream();
 
                 BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
                 PrintWriter printWriter = new PrintWriter(new OutputStreamWriter(outputStream));
@@ -397,7 +453,308 @@ public class ClosesConnectionWhileReceivingResponseHeadersHTTPS {
                         "        \"gravatar_id\": \"\",\n" +
                         "        \"url\": \"https://api.github.com/users/petrkutalek\",\n" +
                         "        \"avatar_url\": \"https://avatars.githubusercontent.com/u/7659931?\"\n" +
+                        "      },\n" +
+                        "      \"repo\": {\n" +
+                        "        \"id\": 20029610,\n" +
+                        "        \"name\": \"petrkutalek/png2pos\",\n" +
+                        "        \"url\": \"https://api.github.com/repos/petrkutalek/png2pos\"\n" +
+                        "      },\n" +
+                        "      \"payload\": {\n" +
+                        "        \"action\": \"published\",\n" +
+                        "        \"release\": {\n" +
+                        "          \"url\": \"https://api.github.com/repos/petrkutalek/png2pos/releases/818676\",\n" +
+                        "          \"assets_url\": \"https://api.github.com/repos/petrkutalek/png2pos/releases/818676/assets\",\n" +
+                        "          \"upload_url\": \"https://uploads.github.com/repos/petrkutalek/png2pos/releases/818676/assets{?name}\",\n" +
+                        "          \"html_url\": \"https://github.com/petrkutalek/png2pos/releases/tag/v1.5.4\",\n" +
+                        "          \"id\": 818676,\n" +
+                        "          \"tag_name\": \"v1.5.4\",\n" +
+                        "          \"target_commitish\": \"master\",\n" +
+                        "          \"name\": \"\",\n" +
+                        "          \"draft\": false,\n" +
+                        "          \"author\": {\n" +
+                        "            \"login\": \"petrkutalek\",\n" +
+                        "            \"id\": 7659931,\n" +
+                        "            \"avatar_url\": \"https://avatars.githubusercontent.com/u/7659931?v=3\",\n" +
+                        "            \"gravatar_id\": \"\",\n" +
+                        "            \"url\": \"https://api.github.com/users/petrkutalek\",\n" +
+                        "            \"html_url\": \"https://github.com/petrkutalek\",\n" +
+                        "            \"followers_url\": \"https://api.github.com/users/petrkutalek/followers\",\n" +
+                        "            \"following_url\": \"https://api.github.com/users/petrkutalek/following{/other_user}\",\n" +
+                        "            \"gists_url\": \"https://api.github.com/users/petrkutalek/gists{/gist_id}\",\n" +
+                        "            \"starred_url\": \"https://api.github.com/users/petrkutalek/starred{/owner}{/repo}\",\n" +
+                        "            \"subscriptions_url\": \"https://api.github.com/users/petrkutalek/subscriptions\",\n" +
+                        "            \"organizations_url\": \"https://api.github.com/users/petrkutalek/orgs\",\n" +
+                        "            \"repos_url\": \"https://api.github.com/users/petrkutalek/repos\",\n" +
+                        "            \"events_url\": \"https://api.github.com/users/petrkutalek/events{/privacy}\",\n" +
+                        "            \"received_events_url\": \"https://api.github.com/users/petrkutalek/received_events\",\n" +
+                        "            \"type\": \"User\",\n" +
+                        "            \"site_admin\": false\n" +
+                        "          },\n" +
+                        "          \"prerelease\": false,\n" +
+                        "          \"created_at\": \"2015-01-01T14:56:44Z\",\n" +
+                        "          \"published_at\": \"2015-01-01T15:00:05Z\",\n" +
+                        "          \"assets\": [\n" +
+                        "            {\n" +
+                        "              \"url\": \"https://api.github.com/repos/petrkutalek/png2pos/releases/assets/362298\",\n" +
+                        "              \"id\": 362298,\n" +
+                        "              \"name\": \"png2pos-v1.5.4-linux.zip\",\n" +
+                        "              \"label\": null,\n" +
+                        "              \"uploader\": {\n" +
+                        "                \"login\": \"petrkutalek\",\n" +
+                        "                \"id\": 7659931,\n" +
+                        "                \"avatar_url\": \"https://avatars.githubusercontent.com/u/7659931?v=3\",\n" +
+                        "                \"gravatar_id\": \"\",\n" +
+                        "                \"url\": \"https://api.github.com/users/petrkutalek\",\n" +
+                        "                \"html_url\": \"https://github.com/petrkutalek\",\n" +
+                        "                \"followers_url\": \"https://api.github.com/users/petrkutalek/followers\",\n" +
+                        "                \"following_url\": \"https://api.github.com/users/petrkutalek/following{/other_user}\",\n" +
+                        "                \"gists_url\": \"https://api.github.com/users/petrkutalek/gists{/gist_id}\",\n" +
+                        "                \"starred_url\": \"https://api.github.com/users/petrkutalek/starred{/owner}{/repo}\",\n" +
+                        "                \"subscriptions_url\": \"https://api.github.com/users/petrkutalek/subscriptions\",\n" +
+                        "                \"organizations_url\": \"https://api.github.com/users/petrkutalek/orgs\",\n" +
+                        "                \"repos_url\": \"https://api.github.com/users/petrkutalek/repos\",\n" +
+                        "                \"events_url\": \"https://api.github.com/users/petrkutalek/events{/privacy}\",\n" +
+                        "                \"received_events_url\": \"https://api.github.com/users/petrkutalek/received_events\",\n" +
+                        "                \"type\": \"User\",\n" +
+                        "                \"site_admin\": false\n" +
+                        "              },\n" +
+                        "              \"content_type\": \"application/zip\",\n" +
+                        "              \"state\": \"uploaded\",\n" +
+                        "              \"size\": 37781,\n" +
+                        "              \"download_count\": 0,\n" +
+                        "              \"created_at\": \"2015-01-01T14:59:22Z\",\n" +
+                        "              \"updated_at\": \"2015-01-01T14:59:23Z\",\n" +
+                        "              \"browser_download_url\": \"https://github.com/petrkutalek/png2pos/releases/download/v1.5.4/png2pos-v1.5.4-linux.zip\"\n" +
+                        "            },\n" +
+                        "            {\n" +
+                        "              \"url\": \"https://api.github.com/repos/petrkutalek/png2pos/releases/assets/362297\",\n" +
+                        "              \"id\": 362297,\n" +
+                        "              \"name\": \"png2pos-v1.5.4-linux.zip.asc\",\n" +
+                        "              \"label\": null,\n" +
+                        "              \"uploader\": {\n" +
+                        "                \"login\": \"petrkutalek\",\n" +
+                        "                \"id\": 7659931,\n" +
+                        "                \"avatar_url\": \"https://avatars.githubusercontent.com/u/7659931?v=3\",\n" +
+                        "                \"gravatar_id\": \"\",\n" +
+                        "                \"url\": \"https://api.github.com/users/petrkutalek\",\n" +
+                        "                \"html_url\": \"https://github.com/petrkutalek\",\n" +
+                        "                \"followers_url\": \"https://api.github.com/users/petrkutalek/followers\",\n" +
+                        "                \"following_url\": \"https://api.github.com/users/petrkutalek/following{/other_user}\",\n" +
+                        "                \"gists_url\": \"https://api.github.com/users/petrkutalek/gists{/gist_id}\",\n" +
+                        "                \"starred_url\": \"https://api.github.com/users/petrkutalek/starred{/owner}{/repo}\",\n" +
+                        "                \"subscriptions_url\": \"https://api.github.com/users/petrkutalek/subscriptions\",\n" +
+                        "                \"organizations_url\": \"https://api.github.com/users/petrkutalek/orgs\",\n" +
+                        "                \"repos_url\": \"https://api.github.com/users/petrkutalek/repos\",\n" +
+                        "                \"events_url\": \"https://api.github.com/users/petrkutalek/events{/privacy}\",\n" +
+                        "                \"received_events_url\": \"https://api.github.com/users/petrkutalek/received_events\",\n" +
+                        "                \"type\": \"User\",\n" +
+                        "                \"site_admin\": false\n" +
+                        "              },\n" +
+                        "              \"content_type\": \"text/plain\",\n" +
+                        "              \"state\": \"uploaded\",\n" +
+                        "              \"size\": 495,\n" +
+                        "              \"download_count\": 0,\n" +
+                        "              \"created_at\": \"2015-01-01T14:59:21Z\",\n" +
+                        "              \"updated_at\": \"2015-01-01T14:59:22Z\",\n" +
+                        "              \"browser_download_url\": \"https://github.com/petrkutalek/png2pos/releases/download/v1.5.4/png2pos-v1.5.4-linux.zip.asc\"\n" +
+                        "            },\n" +
+                        "            {\n" +
+                        "              \"url\": \"https://api.github.com/repos/petrkutalek/png2pos/releases/assets/362299\",\n" +
+                        "              \"id\": 362299,\n" +
+                        "              \"name\": \"png2pos-v1.5.4-osx.zip\",\n" +
+                        "              \"label\": null,\n" +
+                        "              \"uploader\": {\n" +
+                        "                \"login\": \"petrkutalek\",\n" +
+                        "                \"id\": 7659931,\n" +
+                        "                \"avatar_url\": \"https://avatars.githubusercontent.com/u/7659931?v=3\",\n" +
+                        "                \"gravatar_id\": \"\",\n" +
+                        "                \"url\": \"https://api.github.com/users/petrkutalek\",\n" +
+                        "                \"html_url\": \"https://github.com/petrkutalek\",\n" +
+                        "                \"followers_url\": \"https://api.github.com/users/petrkutalek/followers\",\n" +
+                        "                \"following_url\": \"https://api.github.com/users/petrkutalek/following{/other_user}\",\n" +
+                        "                \"gists_url\": \"https://api.github.com/users/petrkutalek/gists{/gist_id}\",\n" +
+                        "                \"starred_url\": \"https://api.github.com/users/petrkutalek/starred{/owner}{/repo}\",\n" +
+                        "                \"subscriptions_url\": \"https://api.github.com/users/petrkutalek/subscriptions\",\n" +
+                        "                \"organizations_url\": \"https://api.github.com/users/petrkutalek/orgs\",\n" +
+                        "                \"repos_url\": \"https://api.github.com/users/petrkutalek/repos\",\n" +
+                        "                \"events_url\": \"https://api.github.com/users/petrkutalek/events{/privacy}\",\n" +
+                        "                \"received_events_url\": \"https://api.github.com/users/petrkutalek/received_events\",\n" +
+                        "                \"type\": \"User\",\n" +
+                        "                \"site_admin\": false\n" +
+                        "              },\n" +
+                        "              \"content_type\": \"application/zip\",\n" +
+                        "              \"state\": \"uploaded\",\n" +
+                        "              \"size\": 27891,\n" +
+                        "              \"download_count\": 0,\n" +
+                        "              \"created_at\": \"2015-01-01T14:59:30Z\",\n" +
+                        "              \"updated_at\": \"2015-01-01T14:59:32Z\",\n" +
+                        "              \"browser_download_url\": \"https://github.com/petrkutalek/png2pos/releases/download/v1.5.4/png2pos-v1.5.4-osx.zip\"\n" +
+                        "            },\n" +
+                        "            {\n" +
+                        "              \"url\": \"https://api.github.com/repos/petrkutalek/png2pos/releases/assets/362300\",\n" +
+                        "              \"id\": 362300,\n" +
+                        "              \"name\": \"png2pos-v1.5.4-osx.zip.asc\",\n" +
+                        "              \"label\": null,\n" +
+                        "              \"uploader\": {\n" +
+                        "                \"login\": \"petrkutalek\",\n" +
+                        "                \"id\": 7659931,\n" +
+                        "                \"avatar_url\": \"https://avatars.githubusercontent.com/u/7659931?v=3\",\n" +
+                        "                \"gravatar_id\": \"\",\n" +
+                        "                \"url\": \"https://api.github.com/users/petrkutalek\",\n" +
+                        "                \"html_url\": \"https://github.com/petrkutalek\",\n" +
+                        "                \"followers_url\": \"https://api.github.com/users/petrkutalek/followers\",\n" +
+                        "                \"following_url\": \"https://api.github.com/users/petrkutalek/following{/other_user}\",\n" +
+                        "                \"gists_url\": \"https://api.github.com/users/petrkutalek/gists{/gist_id}\",\n" +
+                        "                \"starred_url\": \"https://api.github.com/users/petrkutalek/starred{/owner}{/repo}\",\n" +
+                        "                \"subscriptions_url\": \"https://api.github.com/users/petrkutalek/subscriptions\",\n" +
+                        "                \"organizations_url\": \"https://api.github.com/users/petrkutalek/orgs\",\n" +
+                        "                \"repos_url\": \"https://api.github.com/users/petrkutalek/repos\",\n" +
+                        "                \"events_url\": \"https://api.github.com/users/petrkutalek/events{/privacy}\",\n" +
+                        "                \"received_events_url\": \"https://api.github.com/users/petrkutalek/received_events\",\n" +
+                        "                \"type\": \"User\",\n" +
+                        "                \"site_admin\": false\n" +
+                        "              },\n" +
+                        "              \"content_type\": \"text/plain\",\n" +
+                        "              \"state\": \"uploaded\",\n" +
+                        "              \"size\": 495,\n" +
+                        "              \"download_count\": 0,\n" +
+                        "              \"created_at\": \"2015-01-01T14:59:30Z\",\n" +
+                        "              \"updated_at\": \"2015-01-01T14:59:33Z\",\n" +
+                        "              \"browser_download_url\": \"https://github.com/petrkutalek/png2pos/releases/download/v1.5.4/png2pos-v1.5.4-osx.zip.asc\"\n" +
+                        "            }\n" +
+                        "          ],\n" +
+                        "          \"tarball_url\": \"https://api.github.com/repos/petrkutalek/png2pos/tarball/v1.5.4\",\n" +
+                        "          \"zipball_url\": \"https://api.github.com/repos/petrkutalek/png2pos/zipball/v1.5.4\",\n" +
+                        "          \"body\": \"\"\n" +
+                        "        }\n" +
+                        "      },\n" +
+                        "      \"public\": true,\n" +
+                        "      \"created_at\": \"2015-01-01T15:00:05Z\"\n" +
+                        "    },\n" +
+                        "    {\n" +
+                        "      \"id\": \"2489651077\",\n" +
+                        "      \"type\": \"PushEvent\",\n" +
+                        "      \"actor\": {\n" +
+                        "        \"id\": 4070158,\n" +
+                        "        \"login\": \"caleb-eades\",\n" +
+                        "        \"gravatar_id\": \"\",\n" +
+                        "        \"url\": \"https://api.github.com/users/caleb-eades\",\n" +
+                        "        \"avatar_url\": \"https://avatars.githubusercontent.com/u/4070158?\"\n" +
+                        "      },\n" +
+                        "      \"repo\": {\n" +
+                        "        \"id\": 20469468,\n" +
+                        "        \"name\": \"caleb-eades/MinecraftServers\",\n" +
+                        "        \"url\": \"https://api.github.com/repos/caleb-eades/MinecraftServers\"\n" +
+                        "      },\n" +
+                        "      \"payload\": {\n" +
+                        "        \"push_id\": 536863983,\n" +
+                        "        \"size\": 1,\n" +
+                        "        \"distinct_size\": 1,\n" +
+                        "        \"ref\": \"refs/heads/master\",\n" +
+                        "        \"head\": \"6ea9a1f5b0b3c4204272a5fe2587a5ee146c3a49\",\n" +
+                        "        \"before\": \"8e94c95939b8f7db4c085da258698f07ae2b9cf3\",\n" +
+                        "        \"commits\": [\n" +
+                        "          {\n" +
+                        "            \"sha\": \"6ea9a1f5b0b3c4204272a5fe2587a5ee146c3a49\",\n" +
+                        "            \"author\": {\n" +
+                        "              \"email\": \"5bbfe2c07a3ef0b22b72711a2edf1c023f6433c5@gmail.com\",\n" +
+                        "              \"name\": \"caleb-eades\"\n" +
+                        "            },\n" +
+                        "            \"message\": \"Auto Snapshot Server State\",\n" +
+                        "            \"distinct\": true,\n" +
+                        "            \"url\": \"https://api.github.com/repos/caleb-eades/MinecraftServers/commits/6ea9a1f5b0b3c4204272a5fe2587a5ee146c3a49\"\n" +
+                        "          }\n" +
+                        "        ]\n" +
+                        "      },\n" +
+                        "      \"public\": true,\n" +
+                        "      \"created_at\": \"2015-01-01T15:00:05Z\"\n" +
+                        "    },\n" +
+                        "    {\n" +
+                        "      \"id\": \"2489651078\",\n" +
+                        "      \"type\": \"WatchEvent\",\n" +
+                        "      \"actor\": {\n" +
+                        "        \"id\": 285289,\n" +
+                        "        \"login\": \"comcxx11\",\n" +
+                        "        \"gravatar_id\": \"\",\n" +
+                        "        \"url\": \"https://api.github.com/users/comcxx11\",\n" +
+                        "        \"avatar_url\": \"https://avatars.githubusercontent.com/u/285289?\"\n" +
+                        "      },\n" +
+                        "      \"repo\": {\n" +
+                        "        \"id\": 5569958,\n" +
+                        "        \"name\": \"phpsysinfo/phpsysinfo\",\n" +
+                        "        \"url\": \"https://api.github.com/repos/phpsysinfo/phpsysinfo\"\n" +
+                        "      },\n" +
+                        "      \"payload\": {\n" +
+                        "        \"action\": \"started\"\n" +
+                        "      },\n" +
+                        "      \"public\": true,\n" +
+                        "      \"created_at\": \"2015-01-01T15:00:05Z\",\n" +
+                        "      \"org\": {\n" +
+                        "        \"id\": 6797923,\n" +
+                        "        \"login\": \"phpsysinfo\",\n" +
+                        "        \"gravatar_id\": \"\",\n" +
+                        "        \"url\": \"https://api.github.com/orgs/phpsysinfo\",\n" +
+                        "        \"avatar_url\": \"https://avatars.githubusercontent.com/u/6797923?\"\n" +
                         "      }\n" +
+                        "    },\n" +
+                        "    {\n" +
+                        "      \"id\": \"2489651080\",\n" +
+                        "      \"type\": \"WatchEvent\",\n" +
+                        "      \"actor\": {\n" +
+                        "        \"id\": 1757814,\n" +
+                        "        \"login\": \"Soufien\",\n" +
+                        "        \"gravatar_id\": \"\",\n" +
+                        "        \"url\": \"https://api.github.com/users/Soufien\",\n" +
+                        "        \"avatar_url\": \"https://avatars.githubusercontent.com/u/1757814?\"\n" +
+                        "      },\n" +
+                        "      \"repo\": {\n" +
+                        "        \"id\": 25873041,\n" +
+                        "        \"name\": \"wasabeef/awesome-android-libraries\",\n" +
+                        "        \"url\": \"https://api.github.com/repos/wasabeef/awesome-android-libraries\"\n" +
+                        "      },\n" +
+                        "      \"payload\": {\n" +
+                        "        \"action\": \"started\"\n" +
+                        "      },\n" +
+                        "      \"public\": true,\n" +
+                        "      \"created_at\": \"2015-01-01T15:00:05Z\"\n" +
+                        "    },\n" +
+                        "    {\n" +
+                        "      \"id\": \"2489651083\",\n" +
+                        "      \"type\": \"PushEvent\",\n" +
+                        "      \"actor\": {\n" +
+                        "        \"id\": 9538449,\n" +
+                        "        \"login\": \"hcremers\",\n" +
+                        "        \"gravatar_id\": \"\",\n" +
+                        "        \"url\": \"https://api.github.com/users/hcremers\",\n" +
+                        "        \"avatar_url\": \"https://avatars.githubusercontent.com/u/9538449?\"\n" +
+                        "      },\n" +
+                        "      \"repo\": {\n" +
+                        "        \"id\": 26101634,\n" +
+                        "        \"name\": \"ktgw0316/LightZone-l10n-nl\",\n" +
+                        "        \"url\": \"https://api.github.com/repos/ktgw0316/LightZone-l10n-nl\"\n" +
+                        "      },\n" +
+                        "      \"payload\": {\n" +
+                        "        \"push_id\": 536863987,\n" +
+                        "        \"size\": 1,\n" +
+                        "        \"distinct_size\": 1,\n" +
+                        "        \"ref\": \"refs/heads/master\",\n" +
+                        "        \"head\": \"0fca01b12e6a8a1c537842d4831906d1eb4a277e\",\n" +
+                        "        \"before\": \"fe610605ba48a87ee7c9bcf1a8a8db5f51bc4b58\",\n" +
+                        "        \"commits\": [\n" +
+                        "          {\n" +
+                        "            \"sha\": \"0fca01b12e6a8a1c537842d4831906d1eb4a277e\",\n" +
+                        "            \"author\": {\n" +
+                        "              \"email\": \"8800578b51f022c8d8adb9606a8b3db4fedbdac6@192.168.0.167\",\n" +
+                        "              \"name\": \"hans\"\n" +
+                        "            },\n" +
+                        "            \"message\": \"Translated by hcremers\",\n" +
+                        "            \"distinct\": true,\n" +
+                        "            \"url\": \"https://api.github.com/repos/ktgw0316/LightZone-l10n-nl/commits/0fca01b12e6a8a1c537842d4831906d1eb4a277e\"\n" +
+                        "          }\n" +
+                        "        ]\n" +
+                        "      },\n" +
+                        "      \"public\": true,\n" +
+                        "      \"created_at\": \"2015-01-01T15:00:05Z\"\n" +
                         "    }\n" +
                         "  ]";
 
@@ -407,11 +764,17 @@ public class ClosesConnectionWhileReceivingResponseHeadersHTTPS {
                 printWriter.print("POST /test HTTP/1.1\r\n");
                 printWriter.print("Accept: application/json\r\n");
                 printWriter.print("Connection: keep-alive\r\n");
+                printWriter
+                        .print("Authorization: Bearer eyJ4NXQiOiJOVGRtWmpNNFpEazNOalkwWXpjNU1tWm1PRGd3TVRFM01XWXdOREU1TVdSbFpEZzROemM0WkEiLCJraWQiOiJNell4TW1Ga09HWXdNV0kwWldObU5EY3hOR1l3WW1NNFpUQTNNV0kyTkRBelpHUXpOR00wWkdSbE5qSmtPREZrWkRSaU9URmtNV0ZoTXpVMlpHVmxOZ19SUzI1NiIsImFsZyI6IlJTMjU2In0.eyJzdWIiOiJhZG1pbiIsImF1dCI6IkFQUExJQ0FUSU9OIiwiYXVkIjoiY1o4Q2xHUE9rblBkZFo1eEpNZl9CX2k3VFBRYSIsIm5iZiI6MTY1MjIxNjQ5NiwiYXpwIjoiY1o4Q2xHUE9rblBkZFo1eEpNZl9CX2k3VFBRYSIsInNjb3BlIjoiZGVmYXVsdCIsImlzcyI6Imh0dHBzOlwvXC9sb2NhbGhvc3Q6OTQ0M1wvb2F1dGgyXC90b2tlbiIsImV4cCI6MTY1MjIyMDA5NiwiaWF0IjoxNjUyMjE2NDk2LCJqdGkiOiI0ZjliYjkzNy1iNzU4LTQ5MWEtYTM0ZC00Y2MyOTI2OWFhNzIifQ.tru_XsD-kGj2-Eaxsij4f55kM21LsDTKE7voW7SGhcZ2EllVJJBZdL7y_L8Jwv1tMWbfm_i5iHgtrnLrXJY3zUItpOU6IT04oBrFhiI2n4AWC138TeZvJXmH8W2ZAz2vddGpHogtvUwP5Ga_DT43Rtnh0PyTXySOlZQvL6LjR0oiWqjJaIMuuIohsNgRhVdjN8AgSeF2pb_h9jVJStkcK5eIHoom2ZZQeqr0EgtkJgCnft-Z143_83_KUe3pyAU4pzYYhVMTjYPKXIVhx56Z-HSt7UHCe2f1cu_viAyff-LzNcfpyBfj2u5rzTiYlfLtnKVM8ilS7b8hmH307oXb4A\r\n");
+                printWriter
+                        .print("DB-ID: eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICI0d0Y2Ym8tVXRuTFg4VTVoSjNPUkVhQlVVcDB2SVpqMTVUU2NVNUpKcmU4In0.eyJqdGkiOiJlYzdkZGIxNC1hMGMxLTRhMzItYWFmNC05MDdlMDk4OTQxN2YiLCJleHAiOjE2NTA3MjQ3MzksIm5iZiI6MTY1MDY4ODczOSwiaWF0IjoxNjUwNjg4NzM5LCJpc3MiOiJodHRwczovL2VpZHAtdWF0LmRlLmRiLmNvbS9hdXRoL3JlYWxtcy9nbG9iYWwiLCJhdWQiOiIxMTUwOTUtMV9MZW5kaW5nU2VydmljZUxheWVyIiwic3ViIjoiZmI4OTZmMjEtYzQwZi00YjUzLWE4YWMtODVhZTRmNjcxMmJlIiwidHlwIjoiRWlkcC1BdXRoeiIsImF6cCI6IjExNTA5NS0xX0xlbmRpbmdTZXJ2aWNlTGF5ZXIiLCJuYXJpZCI6IjExNTA5NS0xIiwibGVnaXRpbWF0aW9ucyI6W3siaWQiOiJBMjMwMDgiLCJndm8iOlsiUEE3L1BBUlROIiwiUEE3L1NFQSJdLCJsZ19uYXJpZCI6IjExNTA5NS0xIiwibGVnaV9hdXRoIjpbImxnOlBBNy9QQVJUTiIsImxnOlBBNy9TRUEiXSwiaWF0IjoxNjUwNjg4NzM5fV0sImRibGVnaWlkIjoiQTIzMDA4IiwicHJlZmVycmVkX3VzZXJuYW1lIjoiYTIzMDA4IiwibWVtYmVyc2hpcHMiOltdfQ.TbU0ygbWdXQWtegC-tF7Dzl6uYECLSL1mMHQ43ls74g29W4SlAMQcruQVcydF69mSd0vbruTaRvrEG7CwyAIlFF8cYbRs62eQ6BDIim6WhFa0tOmLPRZ63gNGyVcpCbQisXjtzeFDYO6bq0eToTY_dntMkp6lsMXmgwOCVGXg1yopQnsl7XqrfRkZbwukeWBTQ3lbJYIkEIjqrDC1nU1fr9qwN6r2ntp71dGnqsiy6sZRQvlCKLlZSZ_NfWGuz4s-yxd9DFhIcSsvfSUhTuSZThJfw3_CCOSBTWB6Q4r0O9lHetwjI2h6-7DX2WZK_zl61nem1h1rd-EkcIjVU7uxg\r\n");
                 printWriter.print("Content-Type: application/json\r\n");
-                printWriter.print("Content-Length: " + payloadSmall.getBytes().length + "\r\n");
+                printWriter.print("Content-Length: " + payloadSmall.length() + "\r\n");
                 printWriter.print("\r\n");
                 printWriter.print(payloadSmall);
+//                printWriter.print("\r\n");
                 printWriter.flush();
+//                sslSocket.close();
                 String line = null;
                 int i = 0;
                 while ((line = bufferedReader.readLine()) != null) {
@@ -419,16 +782,16 @@ public class ClosesConnectionWhileReceivingResponseHeadersHTTPS {
                     System.out.println("Inut : " + line);
                     if (i == 5) {
                         // close the socket while receiving the response
-                        socket.close();
+                        sslSocket.close();
                         System.exit(-1);
                     }
                 }
                 printWriter.close();
                 bufferedReader.close();
+                sslSocket.close();
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
         }
     }
-
 }
