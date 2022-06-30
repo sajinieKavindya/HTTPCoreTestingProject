@@ -722,7 +722,7 @@ public class WaitUntilAResponseReceived {
                 while((line = bufferedReader.readLine()) != null){
                     i++;
                     System.out.println("Inut : "+line);
-                    if (i == 10) {
+                    if (line.trim().equals("0")) {
                         break;
                     }
                 }

@@ -426,9 +426,6 @@ public class ContentTypeAndBodyMismatch {
                 while((line = bufferedReader.readLine()) != null){
                     i++;
                     System.out.println("Inut : "+line);
-                    if (i == 10) {
-                        break;
-                    }
                 }
                 printWriter.close();
                 bufferedReader.close();
