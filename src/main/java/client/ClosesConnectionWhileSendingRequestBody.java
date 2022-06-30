@@ -3,32 +3,27 @@ package client;
 import client.helpers.RequestMethods;
 import client.helpers.TestPayloads;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.Socket;
 
-public class ClosesConnectionWhileSendingHeaders {
+public class ClosesConnectionWhileSendingRequestBody {
 
     private String host = "localhost";
     private int port = 8290;
 
     public static void main(String[] args) {
 
-        ClosesConnectionWhileSendingHeaders client = new ClosesConnectionWhileSendingHeaders();
+        ClosesConnectionWhileSendingRequestBody client = new ClosesConnectionWhileSendingRequestBody();
 //        for (int i = 0; i < 1000; i++) {
         client.run();
 //        }
     }
 
-    ClosesConnectionWhileSendingHeaders() {
+    ClosesConnectionWhileSendingRequestBody() {
 
     }
 
-    ClosesConnectionWhileSendingHeaders(String host, int port) {
+    ClosesConnectionWhileSendingRequestBody(String host, int port) {
 
         this.host = host;
         this.port = port;
@@ -43,7 +38,7 @@ public class ClosesConnectionWhileSendingHeaders {
             socket.setSendBufferSize(12000);
 
             System.out.println("client started");
-            new ClosesConnectionWhileSendingHeaders.ClientThread(socket).start();
+            new ClosesConnectionWhileSendingRequestBody.ClientThread(socket).start();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -76,22 +71,24 @@ public class ClosesConnectionWhileSendingHeaders {
                 printWriter.print(method + " /test HTTP/1.1\r\n");
                 printWriter.print("Accept: application/json\r\n");
                 printWriter.print("Connection: keep-alive\r\n");
-
-                // close the socket while sending the headers
-                socket.close();
-                System.exit(-1);
-
                 printWriter.print("Content-Type: application/json\r\n");
-                if (!method.equals(RequestMethods.GET)) {
-                    printWriter.print("Content-Length: " + payload.length() + "\r\n");
+                printWriter.print("Content-Length: " + payload.getBytes().length + "\r\n");
+                printWriter.print("\r\n");
+
+                BufferedReader bufReader = new BufferedReader(new StringReader(payload));
+                String line=null;
+                int count = 0;
+                while( (line=bufReader.readLine()) != null )
+                {
+                    if (count++ == 10) {
+                        socket.close();
+                        System.exit(-1);
+                    }
+                    printWriter.print(line);
                 }
 
-                printWriter.print("\r\n");
-                if (!method.equals(RequestMethods.GET)) {
-                    printWriter.print(payload);
-                }
                 printWriter.flush();
-                String line = null;
+                line = null;
                 int i = 0;
                 while ((line = bufferedReader.readLine()) != null) {
                     i++;
