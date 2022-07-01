@@ -1,6 +1,7 @@
 package backend;
 
 import javax.net.ServerSocketFactory;
+import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -8,7 +9,7 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-public class ContentLengthHeaderDifferFromActualContentLengthHTTPS {
+public class ClosesTheConnectionAsSoonAsTheRequestReceivedHTTPS {
 
     public static void main(String[] args) {
         try {
@@ -29,10 +30,10 @@ public class ContentLengthHeaderDifferFromActualContentLengthHTTPS {
                 // Wait for a client to connect. The method will block;
                 // when it returns the socket will be connected to the client
                 Socket client = ss.accept();
+                client.close(); // Close the socket itself
 
                 // Get input and output streams to talk to the client
                 BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()));
-
 
                 char[] buf = new char[10];
                 StringBuilder outt = new StringBuilder();
@@ -60,10 +61,7 @@ public class ContentLengthHeaderDifferFromActualContentLengthHTTPS {
                 out.print("Content-Type: application/json\r\n");
                 out.print("Date: Tue, 14 Dec 2021 08:15:17 GMT\r\n");
                 //out.print("Transfer-Encoding: chunked\r\n");
-                //out.print("Content-Length:  " + line4.getBytes().length + "\r\n");; // The type of data
-                //System.out.println(line4.getBytes().length);
-                //out.print("Content-Length: 36\r\n");; // The type of data
-                out.print("Content-Length: 10\r\n");; // The type of data
+                out.print("Content-Length:  " + line4.getBytes().length + "\r\n");; // The type of data
                 out.print("Connection: Close\r\n");
                 out.print("\r\n"); // End of headers
                 //out.flush();
@@ -88,7 +86,7 @@ public class ContentLengthHeaderDifferFromActualContentLengthHTTPS {
                 // closing the input and output streams
                 out.close(); // Flush and close the output stream
                 //in.close(); // Close the input stream
-                client.close(); // Close the socket itself
+                //client.close(); // Close the socket itself
             } // Now loop again, waiting for the next connection
         }
         // If anything goes wrong, print an error message

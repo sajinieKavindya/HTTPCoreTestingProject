@@ -1,26 +1,23 @@
 package backend;
 
-import util.Utils;
-
 import javax.net.ServerSocketFactory;
+import javax.net.ssl.*;
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.security.KeyStore;
 
-public class ContentLengthHeaderGreaterThanActualContentLength {
+public class ClosesTheConnectionWhileBackendReadingRequestHeadersHTTPS {
 
     public static void main(String[] args) {
         try {
-            File file = Utils.getFile("payload-large.json");
-//            String content = FileUtils.readFileToString(file, "UTF-8");
-            String content = "{\"Hello\":\"World\"}";
-
             // Create a ServerSocket to listen on that port.
-            ServerSocketFactory ssf = ServerSocketFactory.getDefault();
-            ServerSocket ss = ssf.createServerSocket(7000);
+            System.setProperty("javax.net.ssl.keyStore", "/Users/apple/.wum3/products/wso2mi/4.0.0/wso2mi-4.0.0_http_core_testing/repository/resources/security/wso2carbon.jks");
+            System.setProperty("javax.net.ssl.keyStorePassword", "wso2carbon");
+            ServerSocketFactory ssf = SSLServerSocketFactory.getDefault();
+            ServerSocket ss = ssf.createServerSocket(7005);
 
             // Now enter an infinite loop, waiting for & handling connections.
             for (;;) {
@@ -44,32 +41,12 @@ public class ContentLengthHeaderGreaterThanActualContentLength {
                     }
                     i++;
                     if (i == 3) {
+                        // closes the client socket while reading the request headers
+                        clientSocket.close();
                         break;
                     }
                 }
-
-                PrintWriter out = new PrintWriter(clientSocket.getOutputStream());
-
-                // Start sending our reply, using the HTTP 1.1 protocol
-                out.print("HTTP/1.1 200 OK\r\n"); // Version & status code
-                out.print("Access-Control-Expose-Headers:\r\n");
-                out.print("Access-Control-Allow-Origin: *\r\n");
-                out.print("X-Correlation-ID: 9f22c69b-6673-4326-8aff-0c0c097cd3c0\r\n");
-                out.print("Access-Control-Allow-Headers: authorization,Access-Control-Allow-Origin,Content-Type,SOAPAction,apikey,testKey,Authorization\r\n");
-                out.print("Content-Type: application/json\r\n");
-                out.print("Date: Tue, 14 Dec 2021 08:15:17 GMT\r\n");
-                //out.print("Transfer-Encoding: chunked\r\n");
-                out.print("Content-Length: " + content.getBytes().length + 10 + "\r\n");; // The type of data
-                //out.print("Content-Length: 10\r\n");; // The type of data
-                out.print("Connection: keel-alive\r\n");
-                out.print("\r\n"); // End of headers
-                out.print(content + "\r\n");
-
-                out.flush();
                 in.close();
-                out.close();
-                clientSocket.close();
-
             } // Now loop again, waiting for the next connection
         }
         // If anything goes wrong, print an error message

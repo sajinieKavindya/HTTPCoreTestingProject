@@ -22,7 +22,6 @@ public class ClosesTheConnectionAsSoonAsTheRequestReceived {
             //ServerSocketFactory ssf = ServerSocketFactory.getDefault();
             //String line4 = "{\"request\":{\"productCode\":\"NGGENDOMPAY,NGASIALOCALPAY\",\"Request-ID\":\"REQ-95e66d46-206f-410d-901b-0486fccb4728\",\"dbeBridgeAccountNumber\":\"1524941000\",\"status\":\"Active\"},\"data\":[{\"status\":\"Active\",\"updatedDate\":\"2022-05-24 11:33:20\",\"accountType\":\"CCY\",\"mandateType\":\"DBDI\",\"mandateId\":\"gtbmandate.ap\",\"companyShortName\":\"bafircomp\",\"companyCrdsId\":null,\"mainAccountNumber\":\"1524941\",\"dbdiAccountNumber\":null,\"masterAccountNumber\":null,\"dbeBridgeAccountNumber\":\"1524941000\",\"iban\":null,\"tag25\":\"1524941-00-0\",\"branchBicPlusKey\":\"IN001168\",\"swiftCode\":\"DEUTINBBDEL\",\"masterNumber\":\"10052006\",\"accountLinkedProduct\":\"NGASIALOCALPAY\",\"accountLinkedProductStatus\":\"Disabled\",\"accountLinkedProductFeatures\":[{\"feature\":\"ExcludeE2EID\",\"status\":\"Disabled\"}]},{\"status\":\"Active\",\"updatedDate\":\"2022-03-23 10:36:31\",\"accountType\":\"CCY\",\"mandateType\":\"DBDI\",\"mandateId\":\"gtbmandate.ap\",\"companyShortName\":\"bafircomp\",\"companyCrdsId\":null,\"mainAccountNumber\":\"1524941\",\"dbdiAccountNumber\":null,\"masterAccountNumber\":null,\"dbeBridgeAccountNumber\":\"1524941000\",\"iban\":null,\"tag25\":\"1524941-00-0\",\"branchBicPlusKey\":\"IN001168\",\"swiftCode\":\"DEUTINBBDEL\",\"masterNumber\":\"10052006\",\"accountLinkedProduct\":\"NGGENDOMPAY\",\"accountLinkedProductStatus\":\"Disabled\",\"accountLinkedProductFeatures\":[{\"feature\":\"ACCEPTGIRO\",\"status\":\"Disabled\"},{\"feature\":\"AUTOROLLOVER\",\"status\":\"Disabled\"},{\"feature\":\"DOMSO\",\"status\":\"Disabled\"},{\"feature\":\"ESCONFIRM\",\"status\":\"Disabled\"},{\"feature\":\"FSC\",\"status\":\"Disabled\"},{\"feature\":\"SEPADDB2B\",\"status\":\"Disabled\"},{\"feature\":\"SEPADDCORE\",\"status\":\"Disabled\"},{\"feature\":\"SEPAINDP\",\"status\":\"Disabled\"},{\"feature\":\"TESTSEPA\",\"status\":\"Disabled\"},{\"feature\":\"test feat\",\"status\":\"Disabled\"}]}]}";
             String line4 = "{\"Hello\":\"World\"}";
-            String line5 = "{\"a\":\"complete\"}";
 
             ServerSocket ss = ssf.createServerSocket(7000);
             //ServerSocket ss = new ServerSocket(7000);
@@ -61,7 +60,7 @@ public class ClosesTheConnectionAsSoonAsTheRequestReceived {
                 out.print("Access-Control-Allow-Headers: authorization,Access-Control-Allow-Origin,Content-Type,SOAPAction,apikey,testKey,Authorization\r\n");
                 out.print("Content-Type: application/json\r\n");
                 out.print("Date: Tue, 14 Dec 2021 08:15:17 GMT\r\n");
-                out.print("Transfer-Encoding: chunked\r\n");
+                //out.print("Transfer-Encoding: chunked\r\n");
                 out.print("Content-Length:  " + line4.getBytes().length + "\r\n");; // The type of data
                 out.print("Connection: Close\r\n");
                 out.print("\r\n"); // End of headers
@@ -80,8 +79,6 @@ public class ClosesTheConnectionAsSoonAsTheRequestReceived {
                 //out.flush();
                 //out.print("6ac"+"\r\n");
                 out.print(line4 + "\r\n");
-                //Thread.sleep(20000);
-                out.print(line5 + "\r\n");
                 //out.print(0+"\r\n");
                 //out.flush();
                 //out.flush();

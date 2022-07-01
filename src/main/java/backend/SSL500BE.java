@@ -1,8 +1,9 @@
 package backend;
 
 import org.apache.commons.io.FileUtils;
-import util.Utils;
 
+import javax.net.ServerSocketFactory;
+import javax.net.ssl.SSLServerSocketFactory;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
@@ -11,18 +12,12 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URISyntaxException;
 import java.net.URL;
-import javax.net.ServerSocketFactory;
-import javax.net.ssl.SSLServerSocketFactory;
 
-public class SSL400BE {
-
+public class SSL500BE {
 
     public static void main(String[] args) throws Exception {
 
-        SSL400BE echoSSL = new SSL400BE();
-
-        File file = Utils.getFile("payload-large.json");
-
+        File file = getFile("payload-large.json");
         String content = FileUtils.readFileToString(file, "UTF-8");
 
         String line4 = "{\"Hello\":\"World\"}";
@@ -31,16 +26,14 @@ public class SSL400BE {
         // System.out.println(content);
 
         try {
-            System.setProperty("javax.net.ssl.keyStore",
-                    "/Users/nirothipan/Desktop/trash/http-core-testing/" + "wso2mi-4.0.0/repository/resources" +
-                            "/security/wso2carbon.jks");
+            System.setProperty("javax.net.ssl.keyStore", "/Users/apple/.wum3/products/wso2mi/4.0.0/wso2mi-4.0.0_http_core_testing/repository/resources/security/wso2carbon.jks");
             System.setProperty("javax.net.ssl.keyStorePassword", "wso2carbon");
-            ServerSocketFactory serverSocketFactory = SSLServerSocketFactory.getDefault();
-            ServerSocket serverSocket = serverSocketFactory.createServerSocket(7002);
-            System.out.println("SSL Echo Server Started!");
+            ServerSocketFactory ssf = SSLServerSocketFactory.getDefault();
+            ServerSocket ss = ssf.createServerSocket(7005);
+            System.out.println("SSL Server Started!");
 
             do {
-                Socket client = serverSocket.accept();
+                Socket client = ss.accept();
                 BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()));
 
                 StringBuilder sb = new StringBuilder();
@@ -63,7 +56,7 @@ public class SSL400BE {
 
                 // Start sending our reply, using the HTTP 1.1 protocol
                 //out.print(0 + "\r\n");
-                out.print("HTTP/1.1 400 Bad Request\r\n"); // Version & status code
+                out.print("HTTP/1.1 500 Internal Server Error\r\n"); // Version & status code
                 out.print("Access-Control-Expose-Headers:\r\n");
                 out.print("Access-Control-Allow-Origin: *\r\n");
                 out.print("X-Correlation-ID: 9f22c69b-6673-4326-8aff-0c0c097cd3c0\r\n");
@@ -73,8 +66,6 @@ public class SSL400BE {
                 out.print("Content-Type: application/json\r\n");
                 out.print("Date: Tue, 14 Dec 2021 08:15:17 GMT\r\n");
                 out.print("Transfer-Encoding: chunked\r\n");
-                out.print("Content-Length:  " + content.getBytes().length + "\r\n");
-                ; // The type of data
                 out.print("Connection: Close\r\n");
                 out.print("\r\n");
                 out.print(content + "\r\n");
@@ -83,6 +74,21 @@ public class SSL400BE {
             } while (true);
         } catch (Exception e) {
             System.err.println("Error" + e);
+        }
+    }
+
+
+    private static File getFile(String name) throws URISyntaxException {
+
+        URL resource = SSL500BE.class.getClassLoader().getResource(name);
+        if (resource == null) {
+            throw new IllegalArgumentException("file not found!");
+        } else {
+
+            // failed if files have whitespaces or special characters
+            //return new File(resource.getFile());
+
+            return new File(resource.toURI());
         }
     }
 }

@@ -3,44 +3,31 @@ package backend;
 import org.apache.commons.io.FileUtils;
 import util.Utils;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import javax.net.ServerSocketFactory;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.URISyntaxException;
-import java.net.URL;
-import javax.net.ServerSocketFactory;
-import javax.net.ssl.SSLServerSocketFactory;
+import java.nio.charset.StandardCharsets;
 
-public class SSL400BE {
+public class BackendSendsChunks {
 
+    public static final String CRLF = "\r\n";
 
     public static void main(String[] args) throws Exception {
-
-        SSL400BE echoSSL = new SSL400BE();
-
         File file = Utils.getFile("payload-large.json");
-
         String content = FileUtils.readFileToString(file, "UTF-8");
 
-        String line4 = "{\"Hello\":\"World\"}";
-        content = line4;
-
-        // System.out.println(content);
+//        String content = "{\"Hello\":\"World\"}";
 
         try {
-            System.setProperty("javax.net.ssl.keyStore",
-                    "/Users/nirothipan/Desktop/trash/http-core-testing/" + "wso2mi-4.0.0/repository/resources" +
-                            "/security/wso2carbon.jks");
-            System.setProperty("javax.net.ssl.keyStorePassword", "wso2carbon");
-            ServerSocketFactory serverSocketFactory = SSLServerSocketFactory.getDefault();
-            ServerSocket serverSocket = serverSocketFactory.createServerSocket(7002);
-            System.out.println("SSL Echo Server Started!");
+            // Create a ServerSocket to listen on that port.
+            ServerSocketFactory ssf = ServerSocketFactory.getDefault();
+            ServerSocket ss = ssf.createServerSocket(7000);
+            System.out.println("Server Started!");
 
+            // Now enter an infinite loop, waiting for & handling connections.
             do {
-                Socket client = serverSocket.accept();
+                Socket client = ss.accept();
                 BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()));
 
                 StringBuilder sb = new StringBuilder();
@@ -59,11 +46,11 @@ public class SSL400BE {
                 }
 
                 System.out.println("out of loop");
-                PrintWriter out = new PrintWriter(client.getOutputStream());
+                PrintStream out = new PrintStream(client.getOutputStream());
 
                 // Start sending our reply, using the HTTP 1.1 protocol
                 //out.print(0 + "\r\n");
-                out.print("HTTP/1.1 400 Bad Request\r\n"); // Version & status code
+                out.print("HTTP/1.1 200 OK\r\n"); // Version & status code
                 out.print("Access-Control-Expose-Headers:\r\n");
                 out.print("Access-Control-Allow-Origin: *\r\n");
                 out.print("X-Correlation-ID: 9f22c69b-6673-4326-8aff-0c0c097cd3c0\r\n");
@@ -73,16 +60,35 @@ public class SSL400BE {
                 out.print("Content-Type: application/json\r\n");
                 out.print("Date: Tue, 14 Dec 2021 08:15:17 GMT\r\n");
                 out.print("Transfer-Encoding: chunked\r\n");
-                out.print("Content-Length:  " + content.getBytes().length + "\r\n");
                 ; // The type of data
-                out.print("Connection: Close\r\n");
+                out.print("Connection: keep-alive\r\n");
                 out.print("\r\n");
-                out.print(content + "\r\n");
+
+                InputStream stream = new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8));
+
+                int chunkSize = 50;
+                int count;
+                byte[] buffer = new byte[chunkSize];
+
+                while ((count = stream.read(buffer)) > 0) {
+                    out.printf("%x" + "\r\n", count);
+                    out.write(buffer, 0, count);
+                    out.print(CRLF);
+                }
+
+                out.print("0" + CRLF);
+                out.print(CRLF);
+                out.flush();
+
                 out.close();
+                in.close();
                 client.close();
-            } while (true);
-        } catch (Exception e) {
-            System.err.println("Error" + e);
+            } while (true); // Now loop again, waiting for the next connection
+        }
+        // If anything goes wrong, print an error message
+        catch (Exception e) {
+            System.err.println(e);
+            System.err.println("Usage: java HttpMirror <port>");
         }
     }
 }
