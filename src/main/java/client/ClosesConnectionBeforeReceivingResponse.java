@@ -68,7 +68,7 @@ public class ClosesConnectionBeforeReceivingResponse {
                 // Write data
 
                 String payload = TestPayloads.SMALL_PAYLOAD;
-                RequestMethods method = RequestMethods.GET;
+                RequestMethods method = RequestMethods.POST;
 
                 printWriter.print(method + " /test HTTP/1.1\r\n");
                 printWriter.print("Accept: application/json\r\n");
