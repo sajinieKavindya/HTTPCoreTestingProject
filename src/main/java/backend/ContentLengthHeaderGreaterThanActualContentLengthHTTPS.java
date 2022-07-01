@@ -3,6 +3,7 @@ package backend;
 import util.Utils;
 
 import javax.net.ServerSocketFactory;
+import javax.net.ssl.SSLServerSocketFactory;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
@@ -10,7 +11,7 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-public class ContentLengthHeaderGreaterThanActualContentLength {
+public class ContentLengthHeaderGreaterThanActualContentLengthHTTPS {
 
     public static void main(String[] args) {
         try {
@@ -18,9 +19,11 @@ public class ContentLengthHeaderGreaterThanActualContentLength {
 //            String content = FileUtils.readFileToString(file, "UTF-8");
             String content = "{\"Hello\":\"World\"}";
 
-            // Create a ServerSocket to listen on that port.
-            ServerSocketFactory ssf = ServerSocketFactory.getDefault();
+            System.setProperty("javax.net.ssl.keyStore", "/Users/shefandarren/Documents/dbgermany/wso2am-4.0.0/repository/resources/security/wso2carbon.jks");
+            System.setProperty("javax.net.ssl.keyStorePassword", "wso2carbon");
+            ServerSocketFactory ssf = SSLServerSocketFactory.getDefault();
             ServerSocket ss = ssf.createServerSocket(7000);
+            System.out.println("Server Started!");
 
             // Now enter an infinite loop, waiting for & handling connections.
             for (;;) {
