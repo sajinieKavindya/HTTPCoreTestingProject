@@ -3,42 +3,28 @@ package client;
 import client.helpers.RequestMethods;
 import client.helpers.TestPayloads;
 
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
+import javax.net.ssl.*;
+import java.io.*;
 import java.security.KeyStore;
 
-import javax.net.ssl.KeyManager;
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSession;
-import javax.net.ssl.SSLSocket;
-import javax.net.ssl.SSLSocketFactory;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.TrustManagerFactory;
-
-public class ContentLengthDifferFromActualContentLengthHTTPS {
+public class ClosesConnectionBeforeSendingRequestBodyHTTPS {
 
     private String host = "localhost";
     private int port = 8253;
 
     public static void main(String[] args) {
 
-        ContentLengthDifferFromActualContentLengthHTTPS client = new ContentLengthDifferFromActualContentLengthHTTPS();
+        ClosesConnectionBeforeSendingRequestBodyHTTPS client = new ClosesConnectionBeforeSendingRequestBodyHTTPS();
 //        for (int i = 0; i < 1000; i++) {
-        client.run();
+            client.run();
 //        }
     }
 
-    ContentLengthDifferFromActualContentLengthHTTPS() {
+    ClosesConnectionBeforeSendingRequestBodyHTTPS() {
 
     }
 
-    ContentLengthDifferFromActualContentLengthHTTPS(String host, int port) {
+    ClosesConnectionBeforeSendingRequestBodyHTTPS(String host, int port) {
 
         this.host = host;
         this.port = port;
@@ -127,8 +113,8 @@ public class ContentLengthDifferFromActualContentLengthHTTPS {
                 PrintWriter printWriter = new PrintWriter(new OutputStreamWriter(outputStream));
                 // Write data
 
-                String payload = TestPayloads.FULL_PAYLOAD;
-                RequestMethods method = RequestMethods.PUT;
+                String payload = TestPayloads.SMALL_PAYLOAD;
+                RequestMethods method = RequestMethods.GET;
 
                 printWriter.print(method + " /test HTTP/1.1\r\n");
                 printWriter.print("Accept: application/json\r\n");
@@ -139,26 +125,24 @@ public class ContentLengthDifferFromActualContentLengthHTTPS {
                         .print("DB-ID: eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICI0d0Y2Ym8tVXRuTFg4VTVoSjNPUkVhQlVVcDB2SVpqMTVUU2NVNUpKcmU4In0.eyJqdGkiOiJlYzdkZGIxNC1hMGMxLTRhMzItYWFmNC05MDdlMDk4OTQxN2YiLCJleHAiOjE2NTA3MjQ3MzksIm5iZiI6MTY1MDY4ODczOSwiaWF0IjoxNjUwNjg4NzM5LCJpc3MiOiJodHRwczovL2VpZHAtdWF0LmRlLmRiLmNvbS9hdXRoL3JlYWxtcy9nbG9iYWwiLCJhdWQiOiIxMTUwOTUtMV9MZW5kaW5nU2VydmljZUxheWVyIiwic3ViIjoiZmI4OTZmMjEtYzQwZi00YjUzLWE4YWMtODVhZTRmNjcxMmJlIiwidHlwIjoiRWlkcC1BdXRoeiIsImF6cCI6IjExNTA5NS0xX0xlbmRpbmdTZXJ2aWNlTGF5ZXIiLCJuYXJpZCI6IjExNTA5NS0xIiwibGVnaXRpbWF0aW9ucyI6W3siaWQiOiJBMjMwMDgiLCJndm8iOlsiUEE3L1BBUlROIiwiUEE3L1NFQSJdLCJsZ19uYXJpZCI6IjExNTA5NS0xIiwibGVnaV9hdXRoIjpbImxnOlBBNy9QQVJUTiIsImxnOlBBNy9TRUEiXSwiaWF0IjoxNjUwNjg4NzM5fV0sImRibGVnaWlkIjoiQTIzMDA4IiwicHJlZmVycmVkX3VzZXJuYW1lIjoiYTIzMDA4IiwibWVtYmVyc2hpcHMiOltdfQ.TbU0ygbWdXQWtegC-tF7Dzl6uYECLSL1mMHQ43ls74g29W4SlAMQcruQVcydF69mSd0vbruTaRvrEG7CwyAIlFF8cYbRs62eQ6BDIim6WhFa0tOmLPRZ63gNGyVcpCbQisXjtzeFDYO6bq0eToTY_dntMkp6lsMXmgwOCVGXg1yopQnsl7XqrfRkZbwukeWBTQ3lbJYIkEIjqrDC1nU1fr9qwN6r2ntp71dGnqsiy6sZRQvlCKLlZSZ_NfWGuz4s-yxd9DFhIcSsvfSUhTuSZThJfw3_CCOSBTWB6Q4r0O9lHetwjI2h6-7DX2WZK_zl61nem1h1rd-EkcIjVU7uxg\r\n");
                 printWriter.print("Content-Type: application/json\r\n");
                 if (!method.equals(RequestMethods.GET)) {
-                    printWriter.print("Content-Length: 99999\r\n");
+                    printWriter.print("Content-Length: " + payload.length() + "\r\n");
                 }
 
                 printWriter.print("\r\n");
+                sslSocket.close();
+                System.exit(-1);
                 if (!method.equals(RequestMethods.GET)) {
                     printWriter.print(payload);
                 }
+//                printWriter.print("\r\n");
                 printWriter.flush();
+//                sslSocket.close();
                 String line = null;
-                int i = 0;
                 while ((line = bufferedReader.readLine()) != null) {
-                    i++;
-                    System.out.println("Inut : " + line);
-                    if (line.trim().equals("0")) {
-                        break;
-                    }
+                    System.out.println("Input : " + line);
                 }
                 printWriter.close();
                 bufferedReader.close();
-                sslSocket.close();
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
