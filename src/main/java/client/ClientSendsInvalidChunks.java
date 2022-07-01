@@ -8,9 +8,8 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
-import java.util.stream.IntStream;
 
-public class ClientSendsChunks {
+public class ClientSendsInvalidChunks {
 
     private String host = "localhost";
     private int port = 8290;
@@ -359,17 +358,17 @@ public class ClientSendsChunks {
 
     public static void main(String[] args) {
 
-        ClientSendsChunks client = new ClientSendsChunks();
+        ClientSendsInvalidChunks client = new ClientSendsInvalidChunks();
         //        for (int i = 0; i < 1000; i++) {
         client.run();
 //        }
     }
 
-    ClientSendsChunks() {
+    ClientSendsInvalidChunks() {
 
     }
 
-    ClientSendsChunks(String host, int port) {
+    ClientSendsInvalidChunks(String host, int port) {
 
         this.host = host;
         this.port = port;
@@ -383,7 +382,7 @@ public class ClientSendsChunks {
             Socket socket = new Socket(this.host, this.port);
 
             System.out.println("client started");
-            new ClientSendsChunks.ClientThread(socket).start();
+            new ClientSendsInvalidChunks.ClientThread(socket).start();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -428,13 +427,14 @@ public class ClientSendsChunks {
                 byte[] buffer = new byte[chunkSize];
 
                 while ((count = stream.read(buffer)) > 0) {
-                    printWriter.printf("%x" + "\r\n", count);
+                    printWriter.print(count + "\r\n");
                     printWriter.write(buffer, 0, count);
                     printWriter.print(CRLF);
+//                    printWriter.flush();
                 }
 
                 printWriter.print("0" + CRLF);
-                printWriter.print(CRLF);
+//                printWriter.print(CRLF);
                 printWriter.flush();
 
                 String line = null;
