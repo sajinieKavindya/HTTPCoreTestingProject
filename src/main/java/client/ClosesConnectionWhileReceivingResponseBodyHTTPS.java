@@ -144,7 +144,7 @@ public class ClosesConnectionWhileReceivingResponseBodyHTTPS {
                 int i = 0;
                 while ((line = bufferedReader.readLine()) != null) {
                     i++;
-                    System.out.println("Inut : " + line);
+                    System.out.println("Input : " + line);
 //                    System.exit(-1);
                     if (i == 9) {
                         // close the socket while receiving the response

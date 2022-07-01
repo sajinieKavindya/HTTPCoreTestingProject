@@ -94,7 +94,7 @@ public class SlowWrite {
                 int i = 0;
                 while ((line = bufferedReader.readLine()) != null) {
                     i++;
-                    System.out.println("Inut : " + line);
+                    System.out.println("Input : " + line);
                     if (line.equals("0")) {
                         break;
                     }

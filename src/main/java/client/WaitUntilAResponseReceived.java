@@ -88,7 +88,7 @@ public class WaitUntilAResponseReceived {
 
                 String line;
                 while((line = bufferedReader.readLine()) != null){
-                    System.out.println("Inut : "+line);
+                    System.out.println("Input : "+line);
                     if (line.trim().equals("0")) {
                         break;
                     }

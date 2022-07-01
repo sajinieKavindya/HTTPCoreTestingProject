@@ -66,7 +66,7 @@ public class ContentLengthDifferFromActualContentLengthHTTPS {
     }
 
     // Start to run the server
-    public void run(String payload, RequestMethods method) {
+    public void run(String payload, int payloadSize, RequestMethods method) {
 
         SSLContext sslContext = this.createSSLContext();
 
@@ -78,7 +78,7 @@ public class ContentLengthDifferFromActualContentLengthHTTPS {
             SSLSocket sslSocket = (SSLSocket) sslSocketFactory.createSocket(this.host, this.port);
 
             System.out.println("SSL client started");
-            new ClientThread(sslSocket, payload, method).start();
+            new ClientThread(sslSocket, payload, payloadSize, method).start();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -90,12 +90,14 @@ public class ContentLengthDifferFromActualContentLengthHTTPS {
         private SSLSocket sslSocket = null;
         String payload;
         RequestMethods method;
+        int payloadSize;
 
-        ClientThread(SSLSocket sslSocket, String payload, RequestMethods method) {
+        ClientThread(SSLSocket sslSocket, String payload, int payloadSize, RequestMethods method) {
 
             this.sslSocket = sslSocket;
             this.payload = payload;
             this.method = method;
+            this.payloadSize = payloadSize;
         }
 
         public void run() {
@@ -130,7 +132,7 @@ public class ContentLengthDifferFromActualContentLengthHTTPS {
                         .print("DB-ID: eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICI0d0Y2Ym8tVXRuTFg4VTVoSjNPUkVhQlVVcDB2SVpqMTVUU2NVNUpKcmU4In0.eyJqdGkiOiJlYzdkZGIxNC1hMGMxLTRhMzItYWFmNC05MDdlMDk4OTQxN2YiLCJleHAiOjE2NTA3MjQ3MzksIm5iZiI6MTY1MDY4ODczOSwiaWF0IjoxNjUwNjg4NzM5LCJpc3MiOiJodHRwczovL2VpZHAtdWF0LmRlLmRiLmNvbS9hdXRoL3JlYWxtcy9nbG9iYWwiLCJhdWQiOiIxMTUwOTUtMV9MZW5kaW5nU2VydmljZUxheWVyIiwic3ViIjoiZmI4OTZmMjEtYzQwZi00YjUzLWE4YWMtODVhZTRmNjcxMmJlIiwidHlwIjoiRWlkcC1BdXRoeiIsImF6cCI6IjExNTA5NS0xX0xlbmRpbmdTZXJ2aWNlTGF5ZXIiLCJuYXJpZCI6IjExNTA5NS0xIiwibGVnaXRpbWF0aW9ucyI6W3siaWQiOiJBMjMwMDgiLCJndm8iOlsiUEE3L1BBUlROIiwiUEE3L1NFQSJdLCJsZ19uYXJpZCI6IjExNTA5NS0xIiwibGVnaV9hdXRoIjpbImxnOlBBNy9QQVJUTiIsImxnOlBBNy9TRUEiXSwiaWF0IjoxNjUwNjg4NzM5fV0sImRibGVnaWlkIjoiQTIzMDA4IiwicHJlZmVycmVkX3VzZXJuYW1lIjoiYTIzMDA4IiwibWVtYmVyc2hpcHMiOltdfQ.TbU0ygbWdXQWtegC-tF7Dzl6uYECLSL1mMHQ43ls74g29W4SlAMQcruQVcydF69mSd0vbruTaRvrEG7CwyAIlFF8cYbRs62eQ6BDIim6WhFa0tOmLPRZ63gNGyVcpCbQisXjtzeFDYO6bq0eToTY_dntMkp6lsMXmgwOCVGXg1yopQnsl7XqrfRkZbwukeWBTQ3lbJYIkEIjqrDC1nU1fr9qwN6r2ntp71dGnqsiy6sZRQvlCKLlZSZ_NfWGuz4s-yxd9DFhIcSsvfSUhTuSZThJfw3_CCOSBTWB6Q4r0O9lHetwjI2h6-7DX2WZK_zl61nem1h1rd-EkcIjVU7uxg\r\n");
                 printWriter.print("Content-Type: application/json\r\n");
                 if (!method.equals(RequestMethods.GET)) {
-                    printWriter.print("Content-Length: 99999\r\n");
+                    printWriter.print("Content-Length: " + payloadSize + "\r\n");
                 }
 
                 printWriter.print("\r\n");
@@ -142,7 +144,7 @@ public class ContentLengthDifferFromActualContentLengthHTTPS {
                 int i = 0;
                 while ((line = bufferedReader.readLine()) != null) {
                     i++;
-                    System.out.println("Inut : " + line);
+                    System.out.println("Input : " + line);
                     if (line.trim().equals("0")) {
                         break;
                     }

@@ -83,7 +83,7 @@ public class ClosesConnectionWhileReceivingResponseHeaders {
                 int i = 0;
                 while ((line = bufferedReader.readLine()) != null) {
                     i++;
-                    System.out.println("Inut : " + line);
+                    System.out.println("Input : " + line);
                     if (i == 5) {
                         // close the socket while receiving the response
                         socket.close();

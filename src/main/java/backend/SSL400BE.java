@@ -29,7 +29,6 @@ public class SSL400BE {
         content = line4;
 
         // System.out.println(content);
-
         try {
             System.setProperty("javax.net.ssl.keyStore",
                     "/Users/nirothipan/Desktop/trash/http-core-testing/" + "wso2mi-4.0.0/repository/resources" +
