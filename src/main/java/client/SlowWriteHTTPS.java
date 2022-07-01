@@ -12,14 +12,6 @@ public class SlowWriteHTTPS {
     private String host = "localhost";
     private int port = 8253;
 
-    public static void main(String[] args) {
-
-        SlowWriteHTTPS client = new SlowWriteHTTPS();
-//        for (int i = 0; i < 1000; i++) {
-        client.run();
-//        }
-    }
-
     SlowWriteHTTPS() {
 
     }
@@ -35,9 +27,7 @@ public class SlowWriteHTTPS {
 
         try {
             KeyStore keyStore = KeyStore.getInstance("JKS");
-            keyStore.load(new FileInputStream(
-                            "/Users/sulochana/Documents/WSO2/bin/test/wso2mi-4.0.0/repository/resources/security/wso2carbon.jks"),
-                    "wso2carbon".toCharArray());
+            keyStore.load(new FileInputStream(ClientMain.keyStoreLocation), ClientMain.keyStorePassword.toCharArray());
 
             // Create key manager
             KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance("SunX509");
@@ -62,7 +52,7 @@ public class SlowWriteHTTPS {
     }
 
     // Start to run the server
-    public void run() {
+    public void run(String payload, RequestMethods method) {
 
         SSLContext sslContext = this.createSSLContext();
 
@@ -74,7 +64,7 @@ public class SlowWriteHTTPS {
             SSLSocket sslSocket = (SSLSocket) sslSocketFactory.createSocket(this.host, this.port);
 
             System.out.println("SSL client started");
-            new ClientThread(sslSocket).start();
+            new ClientThread(sslSocket, payload, method).start();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -84,10 +74,14 @@ public class SlowWriteHTTPS {
     static class ClientThread extends Thread {
 
         private SSLSocket sslSocket = null;
+        String payload;
+        RequestMethods method;
 
-        ClientThread(SSLSocket sslSocket) {
+        ClientThread(SSLSocket sslSocket, String payload, RequestMethods method) {
 
             this.sslSocket = sslSocket;
+            this.payload = payload;
+            this.method = method;
         }
 
         public void run() {
@@ -113,10 +107,8 @@ public class SlowWriteHTTPS {
                 PrintWriter printWriter = new PrintWriter(new OutputStreamWriter(outputStream));
                 // Write data
 
-                String payload = TestPayloads.FULL_PAYLOAD;
-                RequestMethods method = RequestMethods.POST;
                 StringBuilder sb = new StringBuilder();
-                sb.append(method + " /services/pass_through_proxy HTTP/1.1\r\n");
+                sb.append(method + " /test HTTP/1.1\r\n");
                 sb.append("Accept: application/json\r\n");
                 sb.append("Connection: keep-alive\r\n");
                 printWriter

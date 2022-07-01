@@ -16,14 +16,6 @@ public class ClosesConnectionWhileSendingHeaders {
     private String host = "localhost";
     private int port = 8290;
 
-    public static void main(String[] args) {
-
-        ClosesConnectionWhileSendingHeaders client = new ClosesConnectionWhileSendingHeaders();
-//        for (int i = 0; i < 1000; i++) {
-        client.run();
-//        }
-    }
-
     ClosesConnectionWhileSendingHeaders() {
 
     }
@@ -35,7 +27,7 @@ public class ClosesConnectionWhileSendingHeaders {
     }
 
     // Start to run the server
-    public void run() {
+    public void run(String payload, RequestMethods method) {
 
         try {
             // Create socket
@@ -43,7 +35,7 @@ public class ClosesConnectionWhileSendingHeaders {
             socket.setSendBufferSize(12000);
 
             System.out.println("client started");
-            new ClosesConnectionWhileSendingHeaders.ClientThread(socket).start();
+            new ClosesConnectionWhileSendingHeaders.ClientThread(socket, payload, method).start();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -53,10 +45,14 @@ public class ClosesConnectionWhileSendingHeaders {
     static class ClientThread extends Thread {
 
         private Socket socket = null;
+        String payload;
+        RequestMethods method;
 
-        ClientThread(Socket socket) {
+        ClientThread(Socket socket, String payload, RequestMethods method) {
 
             this.socket = socket;
+            this.payload = payload;
+            this.method= method;
         }
 
         public void run() {
@@ -70,9 +66,6 @@ public class ClosesConnectionWhileSendingHeaders {
                 PrintWriter printWriter = new PrintWriter(new OutputStreamWriter(outputStream));
                 // Write data
 
-                String payload = TestPayloads.FULL_PAYLOAD;
-                RequestMethods method = RequestMethods.PUT;
-
                 printWriter.print(method + " /test HTTP/1.1\r\n");
                 printWriter.print("Accept: application/json\r\n");
                 printWriter.print("Connection: keep-alive\r\n");
@@ -82,12 +75,12 @@ public class ClosesConnectionWhileSendingHeaders {
                 System.exit(-1);
 
                 printWriter.print("Content-Type: application/json\r\n");
-                if (!method.equals(RequestMethods.GET)) {
+                if (!RequestMethods.GET.equals(method)) {
                     printWriter.print("Content-Length: " + payload.length() + "\r\n");
                 }
 
                 printWriter.print("\r\n");
-                if (!method.equals(RequestMethods.GET)) {
+                if (!RequestMethods.GET.equals(method)) {
                     printWriter.print(payload);
                 }
                 printWriter.flush();

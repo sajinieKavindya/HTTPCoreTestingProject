@@ -26,14 +26,6 @@ public class ClosesConnectionWhileReceivingResponseBodyHTTPS {
     private String host = "localhost";
     private int port = 8253;
 
-    public static void main(String[] args) {
-
-        ClosesConnectionWhileReceivingResponseBodyHTTPS client = new ClosesConnectionWhileReceivingResponseBodyHTTPS();
-        for (int i = 0; i < 1; i++) {
-            client.run();
-        }
-    }
-
     ClosesConnectionWhileReceivingResponseBodyHTTPS() {
 
     }
@@ -49,9 +41,7 @@ public class ClosesConnectionWhileReceivingResponseBodyHTTPS {
 
         try {
             KeyStore keyStore = KeyStore.getInstance("JKS");
-            keyStore.load(new FileInputStream(
-                            "/Users/sulochana/Documents/WSO2/bin/test/wso2mi-4.0.0/repository/resources/security/wso2carbon.jks"),
-                    "wso2carbon".toCharArray());
+            keyStore.load(new FileInputStream(ClientMain.keyStoreLocation), ClientMain.keyStorePassword.toCharArray());
 
             // Create key manager
             KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance("SunX509");
@@ -76,7 +66,7 @@ public class ClosesConnectionWhileReceivingResponseBodyHTTPS {
     }
 
     // Start to run the server
-    public void run() {
+    public void run(String payload, RequestMethods method) {
 
         SSLContext sslContext = this.createSSLContext();
 
@@ -88,7 +78,7 @@ public class ClosesConnectionWhileReceivingResponseBodyHTTPS {
             SSLSocket sslSocket = (SSLSocket) sslSocketFactory.createSocket(this.host, this.port);
 
             System.out.println("SSL client started");
-            new ClientThread(sslSocket).start();
+            new ClientThread(sslSocket, payload, method).start();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -98,10 +88,14 @@ public class ClosesConnectionWhileReceivingResponseBodyHTTPS {
     static class ClientThread extends Thread {
 
         private SSLSocket sslSocket = null;
+        String payload;
+        RequestMethods method;
 
-        ClientThread(SSLSocket sslSocket) {
+        ClientThread(SSLSocket sslSocket, String payload, RequestMethods method) {
 
             this.sslSocket = sslSocket;
+            this.payload = payload;
+            this.method = method;
         }
 
         public void run() {
@@ -126,9 +120,6 @@ public class ClosesConnectionWhileReceivingResponseBodyHTTPS {
                 BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
                 PrintWriter printWriter = new PrintWriter(new OutputStreamWriter(outputStream));
                 // Write data
-
-                String payload = TestPayloads.FULL_PAYLOAD;
-                RequestMethods method = RequestMethods.POST;
 
                 printWriter.print(method + " /test HTTP/1.1\r\n");
                 printWriter.print("Accept: application/json\r\n");

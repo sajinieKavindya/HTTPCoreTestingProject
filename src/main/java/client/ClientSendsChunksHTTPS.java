@@ -1,5 +1,7 @@
 package client;
 
+import client.helpers.RequestMethods;
+
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
@@ -24,13 +26,6 @@ public class ClientSendsChunksHTTPS {
     private String host = "localhost";
     private int port = 8253;
 
-    public static void main(String[] args) {
-
-        ClientSendsChunksHTTPS client = new ClientSendsChunksHTTPS();
-//        for (int i = 0; i < 1000; i++) {
-        client.run();
-//        }
-    }
 
     ClientSendsChunksHTTPS() {
 
@@ -47,9 +42,7 @@ public class ClientSendsChunksHTTPS {
 
         try {
             KeyStore keyStore = KeyStore.getInstance("JKS");
-            keyStore.load(new FileInputStream(
-                            "/home/sanoj/work/Maintenance/Internal/github-internal/180/wso2mi-4.0.0/repository/resources/security/wso2carbon.jks"),
-                    "wso2carbon".toCharArray());
+            keyStore.load(new FileInputStream(ClientMain.keyStoreLocation), ClientMain.keyStorePassword.toCharArray());
 
             // Create key manager
             KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance("SunX509");
@@ -74,7 +67,7 @@ public class ClientSendsChunksHTTPS {
     }
 
     // Start to run the server
-    public void run() {
+    public void run(String payload, RequestMethods method) {
 
         SSLContext sslContext = this.createSSLContext();
 
@@ -86,7 +79,7 @@ public class ClientSendsChunksHTTPS {
             SSLSocket sslSocket = (SSLSocket) sslSocketFactory.createSocket(this.host, this.port);
 
             System.out.println("SSL client started");
-            new ClientThread(sslSocket).start();
+            new ClientThread(sslSocket, payload, method).start();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -96,10 +89,14 @@ public class ClientSendsChunksHTTPS {
     static class ClientThread extends Thread {
 
         private SSLSocket sslSocket = null;
+        String payload;
+        RequestMethods method;
 
-        ClientThread(SSLSocket sslSocket) {
+        ClientThread(SSLSocket sslSocket, String payload, RequestMethods method) {
 
             this.sslSocket = sslSocket;
+            this.payload = payload;
+            this.method = method;
         }
 
         public void run() {
@@ -125,11 +122,8 @@ public class ClientSendsChunksHTTPS {
                 PrintStream printWriter = new PrintStream(outputStream);
                 // Write data
 
-                String payloadSmall = "{\"generalData\":{\"partnerClassification\":\"employedPerson\"," +
-                        "\"contexts\":[\"customer\"]},\"checkData\":{\"name\":\"Samsa\",\"firstName\":\"Gregor\",\"birthDate\":\"1963-02-25\",\"nationality\":\"DEU\",\"economicArea\":\"\",\"countryOfResidence\":0,\"industrySectors\":{\"affiliations\":[{}]}}}";
-
                 // Write data
-                printWriter.print("POST /test HTTP/1.1\r\n");
+                printWriter.print(method + " /test HTTP/1.1\r\n");
                 printWriter.print("Accept: application/json\r\n");
                 printWriter.print("Connection: keep-alive\r\n");
                 printWriter.print("Transfer-Encoding: chunked\n");
@@ -140,7 +134,7 @@ public class ClientSendsChunksHTTPS {
                 printWriter.print("Content-Type: application/json\r\n");
                 printWriter.print("\r\n");
 
-                InputStream stream = new ByteArrayInputStream(payloadSmall.getBytes(StandardCharsets.UTF_8));
+                InputStream stream = new ByteArrayInputStream(payload.getBytes(StandardCharsets.UTF_8));
 
                 int chunkSize = 50;
                 int count;

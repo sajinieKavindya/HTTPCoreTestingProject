@@ -71,7 +71,6 @@ public class SSL200BE {
                                 "SOAPAction,apikey,testKey,Authorization\r\n");
                 out.print("Content-Type: application/json\r\n");
                 out.print("Date: Tue, 14 Dec 2021 08:15:17 GMT\r\n");
-                out.print("Transfer-Encoding: chunked\r\n");
                 out.print("Content-Length:  " + content.getBytes().length + "\r\n");
                 ; // The type of data
                 out.print("Connection: Close\r\n");

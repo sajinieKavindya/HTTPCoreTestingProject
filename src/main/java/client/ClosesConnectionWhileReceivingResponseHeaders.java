@@ -16,14 +16,6 @@ public class ClosesConnectionWhileReceivingResponseHeaders {
     private String host = "localhost";
     private int port = 8290;
 
-    public static void main(String[] args) {
-
-        ClosesConnectionWhileReceivingResponseHeaders client = new ClosesConnectionWhileReceivingResponseHeaders();
-//        for (int i = 0; i < 1000; i++) {
-        client.run();
-//        }
-    }
-
     ClosesConnectionWhileReceivingResponseHeaders() {
 
     }
@@ -35,7 +27,7 @@ public class ClosesConnectionWhileReceivingResponseHeaders {
     }
 
     // Start to run the server
-    public void run() {
+    public void run(String payload, RequestMethods method) {
 
         try {
             // Create socket
@@ -43,7 +35,7 @@ public class ClosesConnectionWhileReceivingResponseHeaders {
             socket.setSendBufferSize(12000);
 
             System.out.println("client started");
-            new ClosesConnectionWhileReceivingResponseHeaders.ClientThread(socket).start();
+            new ClosesConnectionWhileReceivingResponseHeaders.ClientThread(socket, payload, method).start();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -53,10 +45,14 @@ public class ClosesConnectionWhileReceivingResponseHeaders {
     static class ClientThread extends Thread {
 
         private Socket socket = null;
+        String payload;
+        RequestMethods method;
 
-        ClientThread(Socket socket) {
+        ClientThread(Socket socket, String payload, RequestMethods method) {
 
             this.socket = socket;
+            this.payload = payload;
+            this.method = method;
         }
 
         public void run() {
@@ -69,9 +65,6 @@ public class ClosesConnectionWhileReceivingResponseHeaders {
                 BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
                 PrintWriter printWriter = new PrintWriter(new OutputStreamWriter(outputStream));
                 // Write data
-
-                String payload = TestPayloads.FULL_PAYLOAD;
-                RequestMethods method = RequestMethods.PUT;
 
                 printWriter.print(method + " /test HTTP/1.1\r\n");
                 printWriter.print("Accept: application/json\r\n");

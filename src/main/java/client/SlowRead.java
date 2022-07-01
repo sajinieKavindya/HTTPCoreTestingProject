@@ -11,12 +11,6 @@ public class SlowRead {
     private String host = "localhost";
     private int port = 8290;
 
-    public static void main(String[] args) {
-
-        SlowRead client = new SlowRead();
-        client.run();
-    }
-
     SlowRead() {
 
     }
@@ -28,14 +22,14 @@ public class SlowRead {
     }
 
     // Start to run the server
-    public void run() {
+    public void run(String payload, RequestMethods method) {
 
         try {
             // Create socket
             Socket socket = new Socket(this.host, this.port);
 
             System.out.println("client started");
-            new SlowRead.ClientThread(socket).start();
+            new SlowRead.ClientThread(socket, payload, method).start();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -45,10 +39,14 @@ public class SlowRead {
     static class ClientThread extends Thread {
 
         private Socket socket = null;
+        String payload;
+        RequestMethods method;
 
-        ClientThread(Socket socket) {
+        ClientThread(Socket socket, String payload, RequestMethods method) {
 
             this.socket = socket;
+            this.payload = payload;
+            this.method = method;
         }
 
         public void run() {
@@ -61,9 +59,6 @@ public class SlowRead {
                 BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
                 PrintWriter printWriter = new PrintWriter(new OutputStreamWriter(outputStream));
                 // Write data
-
-                String payload = TestPayloads.FULL_PAYLOAD;
-                RequestMethods method = RequestMethods.POST;
 
                 printWriter.print(method + " /services/pass_through_proxy HTTP/1.1\r\n");
                 printWriter.print("Accept: application/json\r\n");

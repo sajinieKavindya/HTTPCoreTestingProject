@@ -16,12 +16,6 @@ public class SlowWrite {
     private String host = "localhost";
     private int port = 8290;
 
-    public static void main(String[] args) {
-
-        SlowWrite client = new SlowWrite();
-        client.run();
-    }
-
     SlowWrite() {
 
     }
@@ -33,14 +27,14 @@ public class SlowWrite {
     }
 
     // Start to run the server
-    public void run() {
+    public void run(String payload, RequestMethods method) {
 
         try {
             // Create socket
             Socket socket = new Socket(this.host, this.port);
 
             System.out.println("client started");
-            new SlowWrite.ClientThread(socket).start();
+            new SlowWrite.ClientThread(socket, payload, method).start();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -50,10 +44,14 @@ public class SlowWrite {
     static class ClientThread extends Thread {
 
         private Socket socket = null;
+        String payload;
+        RequestMethods method;
 
-        ClientThread(Socket socket) {
+        ClientThread(Socket socket, String payload, RequestMethods method) {
 
             this.socket = socket;
+            this.payload = payload;
+            this.method = method;
         }
 
         public void run() {
@@ -66,9 +64,6 @@ public class SlowWrite {
                 BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
                 PrintWriter printWriter = new PrintWriter(new OutputStreamWriter(outputStream));
                 // Write data
-
-                String payload = TestPayloads.FULL_PAYLOAD;
-                RequestMethods method = RequestMethods.POST;
 
                 StringBuilder sb = new StringBuilder();
                 sb.append(method + " /services/pass_through_proxy HTTP/1.1\r\n");

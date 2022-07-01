@@ -16,12 +16,6 @@ public class WaitUntilAResponseReceived {
     private String host = "localhost";
     private int port = 8290;
 
-    public static void main(String[] args) {
-
-        WaitUntilAResponseReceived client = new WaitUntilAResponseReceived();
-        client.run();
-    }
-
     WaitUntilAResponseReceived() {
 
     }
@@ -33,14 +27,14 @@ public class WaitUntilAResponseReceived {
     }
 
     // Start to run the server
-    public void run() {
+    public void run(String payload, RequestMethods method) {
 
         try {
             // Create socket
             Socket socket = new Socket(this.host, this.port);
 
             System.out.println("client started");
-            new WaitUntilAResponseReceived.ClientThread(socket).start();
+            new WaitUntilAResponseReceived.ClientThread(socket, payload, method).start();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -50,10 +44,14 @@ public class WaitUntilAResponseReceived {
     static class ClientThread extends Thread {
 
         private Socket socket = null;
+        String payload;
+        RequestMethods method;
 
-        ClientThread(Socket socket) {
+        ClientThread(Socket socket, String payload, RequestMethods method) {
 
             this.socket = socket;
+            this.payload = payload;
+            this.method = method;
         }
 
         public void run() {
@@ -68,8 +66,7 @@ public class WaitUntilAResponseReceived {
 
                 socket.setSendBufferSize(25000);
                 // Write data
-                String payload = TestPayloads.SMALL_PAYLOAD;
-                RequestMethods method = RequestMethods.PUT;
+
                 printWriter.print(method + " /services/pass_through_proxy HTTP/1.1\r\n");
                 printWriter.print("Accept: application/json\r\n");
                 printWriter.print("Connection: keep-alive\r\n");

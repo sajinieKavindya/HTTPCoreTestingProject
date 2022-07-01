@@ -5,7 +5,7 @@ public enum RequestMethods {
     POST("POST"),
     PUT("PUT");
 
-    private final String methodName;
+    private final RequestMethods methodName;
     RequestMethods(String name) {
         this.methodName = name;
     }

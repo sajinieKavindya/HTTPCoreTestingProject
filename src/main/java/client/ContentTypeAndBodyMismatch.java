@@ -16,12 +16,6 @@ public class ContentTypeAndBodyMismatch {
     private String host = "localhost";
     private int port = 8290;
 
-    public static void main(String[] args) {
-
-        ContentTypeAndBodyMismatch client = new ContentTypeAndBodyMismatch();
-        client.run();
-    }
-
     ContentTypeAndBodyMismatch() {
 
     }
@@ -33,14 +27,14 @@ public class ContentTypeAndBodyMismatch {
     }
 
     // Start to run the server
-    public void run() {
+    public void run(String payload, RequestMethods method) {
 
         try {
             // Create socket
             Socket socket = new Socket(this.host, this.port);
 
             System.out.println("client started");
-            new ContentTypeAndBodyMismatch.ClientThread(socket).start();
+            new ContentTypeAndBodyMismatch.ClientThread(socket, payload, method).start();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -50,10 +44,14 @@ public class ContentTypeAndBodyMismatch {
     static class ClientThread extends Thread {
 
         private Socket socket = null;
+        String payload;
+        RequestMethods method;
 
-        ClientThread(Socket socket) {
+        ClientThread(Socket socket, String payload, RequestMethods method) {
 
             this.socket = socket;
+            this.payload = payload;
+            this.method = method;
         }
 
         public void run() {
@@ -68,9 +66,6 @@ public class ContentTypeAndBodyMismatch {
 
                 socket.setSendBufferSize(25000);
                 // Write data
-
-                String payload = TestPayloads.SMALL_PAYLOAD;
-                RequestMethods method = RequestMethods.GET;
 
                 printWriter.print(method + " /test HTTP/1.1\r\n");
                 printWriter.print("Accept: application/json\r\n");
