@@ -1,4 +1,4 @@
-package backend.case14;
+package backend.case14.http;
 
 import client.helpers.RequestMethods;
 import client.helpers.TestPayloads;
@@ -63,7 +63,7 @@ public class SlowWriteClient {
                 PrintStream printWriter = new PrintStream(socket.getOutputStream());
                 // Write data
 
-                String payload = TestPayloads.FULL_PAYLOAD;
+                String payload = TestPayloads.LARGE_PAYLOAD_25K;
                 RequestMethods method = RequestMethods.POST;
 
                 printWriter.print(method + " /test HTTP/1.1\r\n");
@@ -102,6 +102,7 @@ public class SlowWriteClient {
                     }
                 }
                 bufferedReader.close();
+                socket.close();
             } catch (Exception ex) {
                 ex.printStackTrace();
             }

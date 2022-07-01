@@ -1,7 +1,6 @@
 package client;
 
 import client.helpers.RequestMethods;
-import client.helpers.TestPayloads;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;

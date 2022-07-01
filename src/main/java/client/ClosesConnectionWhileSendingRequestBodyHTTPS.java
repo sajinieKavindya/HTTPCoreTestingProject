@@ -1,7 +1,6 @@
 package client;
 
 import client.helpers.RequestMethods;
-import client.helpers.TestPayloads;
 
 import javax.net.ssl.*;
 import java.io.*;
