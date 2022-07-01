@@ -1,6 +1,7 @@
 package backend;
 
 import org.apache.commons.io.FileUtils;
+import util.Utils;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -19,7 +20,7 @@ public class SSL200BE {
 
         SSL200BE echoSSL = new SSL200BE();
 
-        File file = echoSSL.getFile("payload-large.json");
+        File file = Utils.getFile("payload-large.json");
 
         String content = FileUtils.readFileToString(file, "UTF-8");
 
@@ -81,21 +82,6 @@ public class SSL200BE {
             } while (true);
         } catch (Exception e) {
             System.err.println("Error" + e);
-        }
-    }
-
-
-    private File getFile(String name) throws URISyntaxException {
-
-        URL resource = getClass().getClassLoader().getResource(name);
-        if (resource == null) {
-            throw new IllegalArgumentException("file not found!");
-        } else {
-
-            // failed if files have whitespaces or special characters
-            //return new File(resource.getFile());
-
-            return new File(resource.toURI());
         }
     }
 }
