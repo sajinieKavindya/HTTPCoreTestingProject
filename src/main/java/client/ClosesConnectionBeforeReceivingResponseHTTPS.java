@@ -128,7 +128,7 @@ public class ClosesConnectionBeforeReceivingResponseHTTPS {
                 // Write data
 
                 String payload = TestPayloads.SMALL_PAYLOAD;
-                RequestMethods method = RequestMethods.POST;
+                RequestMethods method = RequestMethods.GET;
 
                 printWriter.print(method + " /test HTTP/1.1\r\n");
                 printWriter.print("Accept: application/json\r\n");
@@ -156,7 +156,7 @@ public class ClosesConnectionBeforeReceivingResponseHTTPS {
                 int i = 0;
                 while ((line = bufferedReader.readLine()) != null) {
                     i++;
-                    System.out.println("Inut : " + line);
+                    System.out.println("Input : " + line);
                     if (line.trim().equals("0")) {
                         break;
                     }
