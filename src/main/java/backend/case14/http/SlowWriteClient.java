@@ -10,7 +10,7 @@ import java.nio.charset.StandardCharsets;
 public class SlowWriteClient {
 
     private String host = "localhost";
-    private int port = 8290;
+    private int port = 8280;
     public static final String CRLF = "\r\n";
 
     public static void main(String[] args) {
@@ -66,8 +66,9 @@ public class SlowWriteClient {
                 String payload = TestPayloads.LARGE_PAYLOAD_25K;
                 RequestMethods method = RequestMethods.POST;
 
-                printWriter.print(method + " /test HTTP/1.1\r\n");
+                printWriter.print(method + " /test/1.0.0 HTTP/1.1\r\n");
                 printWriter.print("Accept: application/json\r\n");
+                printWriter.print("Authorization: Bearer eyJ4NXQiOiJOVGRtWmpNNFpEazNOalkwWXpjNU1tWm1PRGd3TVRFM01XWXdOREU1TVdSbFpEZzROemM0WkEiLCJraWQiOiJNell4TW1Ga09HWXdNV0kwWldObU5EY3hOR1l3WW1NNFpUQTNNV0kyTkRBelpHUXpOR00wWkdSbE5qSmtPREZrWkRSaU9URmtNV0ZoTXpVMlpHVmxOZ19SUzI1NiIsImFsZyI6IlJTMjU2In0.eyJzdWIiOiJhZG1pbiIsImF1dCI6IkFQUExJQ0FUSU9OIiwiYXVkIjoidGhkcV9YWkxLR0ZzTlFvaW9jbW1ET0xyOFNrYSIsIm5iZiI6MTY1NjU5NTg2OSwiYXpwIjoidGhkcV9YWkxLR0ZzTlFvaW9jbW1ET0xyOFNrYSIsInNjb3BlIjoiZGVmYXVsdCIsImlzcyI6Imh0dHBzOlwvXC9sb2NhbGhvc3Q6OTQ0M1wvb2F1dGgyXC90b2tlbiIsImV4cCI6OTIyMzM3MjAzNjg1NDc3NSwiaWF0IjoxNjU2NTk1ODY5LCJqdGkiOiI0ZDY4NGJmOC1jZDI1LTQyYzItOGQwMC1lZDRkYjc0OGY5MjMifQ.N4H8Fgl0wwHCUe-u7a9Pw6dOA40mdWSZG9J73t9zNWL58yHgh_Rg77n7QVKkW8qp_-fk51uc5Bm5YZ_23o3bLCToAPoVIg_NVXGhZ84JQfapIPdek_CGShBM87hKCPnK7Vmv-gul1TuCWZVmZaSfcfFtGVGBgxGWmvFO4huOx0zb4NUfTYDaTToQ0w_r_y9ee2vcLYRNT31tjKUKcvV9pukI29vkdYI2UexVWjEGcbJTgs5ak8NlZCTqxvUewJGjbVYG9xeSW1nbReJdClD9o6pae6nrOaqHeFX1MZet8dVHLGVwZwlk9NTNVxFKES7U8BU1IxEFxz62vpHfuz4slA\r\n");
                 printWriter.print("Connection: keep-alive\r\n");
                 printWriter.print("Transfer-Encoding: chunked\n");
                 printWriter.print("Content-Type: text/plain\r\n");
