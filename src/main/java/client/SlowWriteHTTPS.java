@@ -113,10 +113,10 @@ public class SlowWriteHTTPS {
                 PrintWriter printWriter = new PrintWriter(new OutputStreamWriter(outputStream));
                 // Write data
 
-                String payload = TestPayloads.FULL_PAYLOAD;
-                RequestMethods method = RequestMethods.POST;
+                String payload = TestPayloads.SMALL_PAYLOAD;
+                RequestMethods method = RequestMethods.GET;
                 StringBuilder sb = new StringBuilder();
-                sb.append(method + " /services/pass_through_proxy HTTP/1.1\r\n");
+                sb.append(method + " /test HTTP/1.1\r\n");
                 sb.append("Accept: application/json\r\n");
                 sb.append("Connection: keep-alive\r\n");
                 printWriter
@@ -144,7 +144,7 @@ public class SlowWriteHTTPS {
                 int i = 0;
                 while ((line = bufferedReader.readLine()) != null) {
                     i++;
-                    System.out.println("Inut : " + line);
+                    System.out.println("Input : " + line);
                     if (line.trim().equals("0")) {
                         break;
                     }

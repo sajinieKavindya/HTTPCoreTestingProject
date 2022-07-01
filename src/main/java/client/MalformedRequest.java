@@ -70,7 +70,7 @@ public class MalformedRequest {
                 PrintWriter printWriter = new PrintWriter(new OutputStreamWriter(outputStream));
                 // Write data
 
-                String payload = TestPayloads.FULL_PAYLOAD;
+                String payload = TestPayloads.SMALL_PAYLOAD;
                 RequestMethods method = RequestMethods.POST;
 
                 printWriter.print(method + " /test HTTP/1.1\r\n");

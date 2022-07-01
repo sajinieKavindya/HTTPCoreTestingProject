@@ -127,7 +127,7 @@ public class ClosesConnectionWhileSendingHeadersHTTPS {
                 PrintWriter printWriter = new PrintWriter(new OutputStreamWriter(outputStream));
                 // Write data
 
-                String payload = TestPayloads.FULL_PAYLOAD;
+                String payload = TestPayloads.SMALL_PAYLOAD;
                 RequestMethods method = RequestMethods.POST;
 
                 printWriter.print(method + " /test HTTP/1.1\r\n");
@@ -156,7 +156,7 @@ public class ClosesConnectionWhileSendingHeadersHTTPS {
                 int i = 0;
                 while ((line = bufferedReader.readLine()) != null) {
                     i++;
-                    System.out.println("Inut : " + line);
+                    System.out.println("Input : " + line);
                     if (line.trim().equals("0")) {
                         break;
                     }
