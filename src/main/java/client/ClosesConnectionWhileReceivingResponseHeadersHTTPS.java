@@ -128,7 +128,7 @@ public class ClosesConnectionWhileReceivingResponseHeadersHTTPS {
                 // Write data
 
                 String payload = TestPayloads.SMALL_PAYLOAD;
-                RequestMethods method = RequestMethods.POST;
+                RequestMethods method = RequestMethods.GET;
 
                 printWriter.print(method + " /test HTTP/1.1\r\n");
                 printWriter.print("Accept: application/json\r\n");
