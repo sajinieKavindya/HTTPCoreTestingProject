@@ -127,8 +127,8 @@ public class ClosesConnectionWhileReceivingResponseHeadersHTTPS {
                 PrintWriter printWriter = new PrintWriter(new OutputStreamWriter(outputStream));
                 // Write data
 
-                String payload = TestPayloads.SMALL_PAYLOAD;
-                RequestMethods method = RequestMethods.GET;
+                String payload = TestPayloads.FULL_PAYLOAD;
+                RequestMethods method = RequestMethods.POST;
 
                 printWriter.print(method + " /test HTTP/1.1\r\n");
                 printWriter.print("Accept: application/json\r\n");
@@ -153,7 +153,7 @@ public class ClosesConnectionWhileReceivingResponseHeadersHTTPS {
                 int i = 0;
                 while ((line = bufferedReader.readLine()) != null) {
                     i++;
-                    System.out.println("Input : " + line);
+                    System.out.println("Inut : " + line);
                     if (i == 5) {
                         // close the socket while receiving the response
                         sslSocket.close();
