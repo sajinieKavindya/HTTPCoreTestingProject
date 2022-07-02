@@ -1,19 +1,22 @@
 package backend.case14.http;
 
+import backend.BackendServer;
+
 import javax.net.ServerSocketFactory;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-public class BackendClosesTheConnectionWhileMISendingTheRequestBody {
+public class BackendClosesTheConnectionWhileMISendingTheRequestBody extends BackendServer {
 
-    public static void main(String[] args) {
+    public void run(int port, String content) throws Exception {
+
         try {
             // Create a ServerSocket to listen on that port.
             ServerSocketFactory ssf = ServerSocketFactory.getDefault();
-            ServerSocket ss = ssf.createServerSocket(7005);
-            System.out.println("Server started");
+            ss = ssf.createServerSocket(port);
+            System.out.println("Server Started!");
 
             // Now enter an infinite loop, waiting for & handling connections.
             for (;;) {

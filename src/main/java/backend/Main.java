@@ -1,5 +1,9 @@
 package backend;
 
+import backend.case14.http.BackendClosesTheConnectionWhileMISendingTheRequestBody;
+import backend.case14.http.SlowWriteClient;
+import backend.case14.https.BackendClosesTheConnectionWhileMISendingTheRequestBodyHTTPS;
+import backend.case14.https.SlowWriteClientHTTPS;
 import client.helpers.RequestMethods;
 import client.helpers.SimpleHTTPClient;
 import client.helpers.SimpleHTTPSClient;
@@ -85,6 +89,8 @@ public class Main {
 //
 //        runHTTPCase(new SlowWriting(), serverPort, serverPayload, clientPayload, method, noOfClientRequests, false);
 
+//        runCase14(serverPort, serverPayload, noOfClientRequests);
+
     }
 
     public void runAllHTTPSCases(int serverPort, String serverPayload, String clientPayload, RequestMethods method,
@@ -128,6 +134,8 @@ public class Main {
 //        runHTTPSCase(new SlowReading(), serverPort, serverPayload, clientPayload, method, noOfClientRequests, false);
 //
 //        runHTTPSCase(new SlowWriting(), serverPort, serverPayload, clientPayload, method, noOfClientRequests, false);
+
+//        runCase14HTTPS(serverPort, serverPayload, noOfClientRequests);
 
     }
 
@@ -195,12 +203,62 @@ public class Main {
 
     public void sendHTTPClientRequest(String payload, RequestMethods method, boolean enableChunking) {
         SimpleHTTPClient client = new SimpleHTTPClient(host, serverPort);
-        client.run(payload, method);
+        client.run(payload, method, enableChunking);
     }
 
     public void sendHTTPSClientRequest(String payload, RequestMethods method, boolean enableChunking) {
         SimpleHTTPSClient client = new SimpleHTTPSClient(host, serverPort);
         client.run(payload, method, authorizationHeader, enableChunking);
+    }
+
+    public void runCase14(int port, String serverPayload, int noOfClientRequests) {
+        BackendServer bE1 = new BackendClosesTheConnectionWhileMISendingTheRequestBody();
+        startBackendServer(bE1, port, serverPayload);
+
+        try {
+            System.out.println("Waiting until backend starts!");
+            Thread.sleep(waitForServerStartup);
+        } catch (InterruptedException e) {
+            //
+        }
+
+        SlowWriteClient client = new SlowWriteClient(host, serverPort);
+        for (int i = 0; i < noOfClientRequests; i++) {
+            client.run(TestPayloads.LARGE_PAYLOAD_25K);
+        }
+
+        bE1.shutdownServer();
+
+        try {
+            Thread.sleep(waitForServerShutdown);
+        } catch (InterruptedException e) {
+            //
+        }
+    }
+
+    public void runCase14HTTPS(int port, String serverPayload, int noOfClientRequests) {
+        BackendServer bE1 = new BackendClosesTheConnectionWhileMISendingTheRequestBodyHTTPS();
+        startBackendServer(bE1, port, serverPayload);
+
+        try {
+            System.out.println("Waiting until backend starts!");
+            Thread.sleep(waitForServerStartup);
+        } catch (InterruptedException e) {
+            //
+        }
+
+        SlowWriteClientHTTPS client = new SlowWriteClientHTTPS(host, serverPort);
+        for (int i = 0; i < noOfClientRequests; i++) {
+            client.run(TestPayloads.LARGE_PAYLOAD_25K, authorizationHeader);
+        }
+
+        bE1.shutdownServer();
+
+        try {
+            Thread.sleep(waitForServerShutdown);
+        } catch (InterruptedException e) {
+            //
+        }
     }
 
 }

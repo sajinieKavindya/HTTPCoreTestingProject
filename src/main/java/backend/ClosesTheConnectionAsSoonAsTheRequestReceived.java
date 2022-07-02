@@ -9,7 +9,7 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-public class ClosesTheConnectionAsSoonAsTheRequestReceived extends BackendServer{
+public class ClosesTheConnectionAsSoonAsTheRequestReceived extends BackendServer {
 
     public void run(int port, String content) throws Exception {
 
