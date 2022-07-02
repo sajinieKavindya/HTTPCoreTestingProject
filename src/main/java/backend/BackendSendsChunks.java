@@ -9,20 +9,19 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 
-public class BackendSendsChunks {
+public class BackendSendsChunks extends BackendServer {
 
     public static final String CRLF = "\r\n";
 
-    public static void main(String[] args) throws Exception {
-        File file = Utils.getFile("payload-large.json");
-        String content = FileUtils.readFileToString(file, "UTF-8");
+    public BackendSendsChunks() {
+    }
 
-//        String content = "{\"Hello\":\"World\"}";
+    public void run(int port, String content) throws Exception {
 
         try {
             // Create a ServerSocket to listen on that port.
             ServerSocketFactory ssf = ServerSocketFactory.getDefault();
-            ServerSocket ss = ssf.createServerSocket(7000);
+            ss = ssf.createServerSocket(port);
             System.out.println("Server Started!");
 
             // Now enter an infinite loop, waiting for & handling connections.
@@ -87,8 +86,7 @@ public class BackendSendsChunks {
         }
         // If anything goes wrong, print an error message
         catch (Exception e) {
-            System.err.println(e);
-            System.err.println("Usage: java HttpMirror <port>");
+            System.err.println("Server shutdown!");
         }
     }
 }

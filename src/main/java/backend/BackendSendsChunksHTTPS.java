@@ -10,22 +10,13 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 
-public class BackendSendsChunksHTTPS {
+public class BackendSendsChunksHTTPS extends BackendServer {
 
-    public static final String CRLF = "\r\n";
-
-    public static void main(String[] args) throws Exception {
-        File file = Utils.getFile("payload-large.json");
-        String content = FileUtils.readFileToString(file, "UTF-8");
-
-//        String content = "{\"Hello\":\"World\"}";
-
+    public void run(int port, String content) throws Exception {
         try {
             // Create a ServerSocket to listen on that port.
-            System.setProperty("javax.net.ssl.keyStore", "/Users/apple/.wum3/products/wso2mi/4.0.0/wso2mi-4.0.0_http_core_testing/repository/resources/security/wso2carbon.jks");
-            System.setProperty("javax.net.ssl.keyStorePassword", "wso2carbon");
             ServerSocketFactory ssf = SSLServerSocketFactory.getDefault();
-            ServerSocket ss = ssf.createServerSocket(7005);
+            ServerSocket ss = ssf.createServerSocket(port);
             System.out.println("SSL Server Started!");
 
             // Now enter an infinite loop, waiting for & handling connections.
@@ -52,7 +43,6 @@ public class BackendSendsChunksHTTPS {
                 PrintStream out = new PrintStream(client.getOutputStream());
 
                 // Start sending our reply, using the HTTP 1.1 protocol
-                //out.print(0 + "\r\n");
                 out.print("HTTP/1.1 200 OK\r\n"); // Version & status code
                 out.print("Access-Control-Expose-Headers:\r\n");
                 out.print("Access-Control-Allow-Origin: *\r\n");
@@ -90,8 +80,7 @@ public class BackendSendsChunksHTTPS {
         }
         // If anything goes wrong, print an error message
         catch (Exception e) {
-            System.err.println(e);
-            System.err.println("Usage: java HttpMirror <port>");
+            System.err.println("Server shutdown!");
         }
     }
 }

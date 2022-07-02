@@ -11,19 +11,14 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-public class ContentLengthHeaderGreaterThanActualContentLengthHTTPS {
+public class ContentLengthHeaderGreaterThanActualContentLengthHTTPS extends BackendServer {
 
-    public static void main(String[] args) {
+    public void run(int port, String content) throws Exception {
         try {
-            File file = Utils.getFile("payload-large.json");
-//            String content = FileUtils.readFileToString(file, "UTF-8");
-            String content = "{\"Hello\":\"World\"}";
-
-            System.setProperty("javax.net.ssl.keyStore", "/Users/shefandarren/Documents/dbgermany/wso2am-4.0.0/repository/resources/security/wso2carbon.jks");
-            System.setProperty("javax.net.ssl.keyStorePassword", "wso2carbon");
+            // Create a ServerSocket to listen on that port.
             ServerSocketFactory ssf = SSLServerSocketFactory.getDefault();
-            ServerSocket ss = ssf.createServerSocket(7000);
-            System.out.println("Server Started!");
+            ss = ssf.createServerSocket(port);
+            System.out.println("SSL Server Started!");
 
             // Now enter an infinite loop, waiting for & handling connections.
             for (;;) {
@@ -77,8 +72,7 @@ public class ContentLengthHeaderGreaterThanActualContentLengthHTTPS {
         }
         // If anything goes wrong, print an error message
         catch (Exception e) {
-            System.err.println(e);
-            System.err.println("Usage: java HttpMirror <port>");
+            System.err.println("Server shutdown!");
         }
     }
 }

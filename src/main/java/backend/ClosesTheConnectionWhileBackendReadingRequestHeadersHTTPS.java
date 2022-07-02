@@ -9,15 +9,14 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.security.KeyStore;
 
-public class ClosesTheConnectionWhileBackendReadingRequestHeadersHTTPS {
+public class ClosesTheConnectionWhileBackendReadingRequestHeadersHTTPS extends BackendServer {
 
-    public static void main(String[] args) {
+    public void run(int port, String content) throws Exception {
         try {
             // Create a ServerSocket to listen on that port.
-            System.setProperty("javax.net.ssl.keyStore", "/Users/apple/.wum3/products/wso2mi/4.0.0/wso2mi-4.0.0_http_core_testing/repository/resources/security/wso2carbon.jks");
-            System.setProperty("javax.net.ssl.keyStorePassword", "wso2carbon");
             ServerSocketFactory ssf = SSLServerSocketFactory.getDefault();
-            ServerSocket ss = ssf.createServerSocket(7005);
+            ss = ssf.createServerSocket(port);
+            System.out.println("SSL Server Started!");
 
             // Now enter an infinite loop, waiting for & handling connections.
             for (;;) {
@@ -30,20 +29,13 @@ public class ClosesTheConnectionWhileBackendReadingRequestHeadersHTTPS {
 
                 char[] buf = new char[10];
                 StringBuilder outt = new StringBuilder();
-                int i = 0;
                 while (true) {
                     try{
                         int read = in.read(buf);
                         outt.append(buf, 0, read);
-                        //if (read < 100)
+                        break;
                     } catch(Exception e){
                         e.printStackTrace();
-                    }
-                    i++;
-                    if (i == 3) {
-                        // closes the client socket while reading the request headers
-                        clientSocket.close();
-                        break;
                     }
                 }
                 in.close();
@@ -51,8 +43,7 @@ public class ClosesTheConnectionWhileBackendReadingRequestHeadersHTTPS {
         }
         // If anything goes wrong, print an error message
         catch (Exception e) {
-            System.err.println(e);
-            System.err.println("Usage: java HttpMirror <port>");
+            System.err.println("Server shutdown!");
         }
     }
 }

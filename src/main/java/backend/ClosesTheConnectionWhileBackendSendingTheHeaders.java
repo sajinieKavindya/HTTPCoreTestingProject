@@ -7,15 +7,15 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-public class ClosesTheConnectionWhileBackendSendingTheHeaders {
+public class ClosesTheConnectionWhileBackendSendingTheHeaders extends BackendServer {
 
-    public static void main(String[] args) {
+    public void run(int port, String content) throws Exception {
+
         try {
-            String line4 = "{\"Hello\":\"World\"}";
-
             // Create a ServerSocket to listen on that port.
             ServerSocketFactory ssf = ServerSocketFactory.getDefault();
-            ServerSocket ss = ssf.createServerSocket(7000);
+            ss = ssf.createServerSocket(port);
+            System.out.println("Server Started!");
 
             // Now enter an infinite loop, waiting for & handling connections.
             for (;;) {
@@ -54,7 +54,7 @@ public class ClosesTheConnectionWhileBackendSendingTheHeaders {
                 out.print("Content-Type: application/json\r\n");
                 out.print("Date: Tue, 14 Dec 2021 08:15:17 GMT\r\n");
                 //out.print("Transfer-Encoding: chunked\r\n");
-                out.print("Content-Length:  " + line4.getBytes().length + "\r\n");; // The type of data
+                out.print("Content-Length:  " + content.getBytes().length + "\r\n");; // The type of data
 
                 out.flush();
                 in.close();
@@ -70,8 +70,7 @@ public class ClosesTheConnectionWhileBackendSendingTheHeaders {
         }
         // If anything goes wrong, print an error message
         catch (Exception e) {
-            System.err.println(e);
-            System.err.println("Usage: java HttpMirror <port>");
+            System.err.println("Server shutdown!");
         }
     }
 }

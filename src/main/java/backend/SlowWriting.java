@@ -7,17 +7,19 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-public class SlowWriting {
+public class SlowWriting extends BackendServer {
 
-    public static void main(String[] args) {
-        String payload = "response from backend";
-        int itr = 10;
+    public void run(int port, String content) throws Exception {
 
         try {
             // Create a ServerSocket to listen on that port.
             ServerSocketFactory ssf = ServerSocketFactory.getDefault();
-            ServerSocket ss = ssf.createServerSocket(7000);
+            ss = ssf.createServerSocket(port);
+            System.out.println("Server Started!");
             ss.setReceiveBufferSize(3);
+
+            String payload = "response from backend";
+            int itr = 10;
 
             // Now enter an infinite loop, waiting for & handling connections.
             for (;;) {
@@ -92,8 +94,7 @@ public class SlowWriting {
         }
         // If anything goes wrong, print an error message
         catch (Exception e) {
-            System.err.println(e);
-            System.err.println("Usage: java HttpMirror <port>");
+            System.err.println("Server shutdown!");
         }
     }
 

@@ -8,17 +8,14 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-public class ClosesTheConnectionBeforeBackendSendsTheBodyHTTPS {
+public class ClosesTheConnectionBeforeBackendSendsTheBodyHTTPS extends BackendServer {
 
-    public static void main(String[] args) {
+    public void run(int port, String content) throws Exception {
         try {
-            String message = "{\"Hello\":\"World\"}";
-
             // Create a ServerSocket to listen on that port.
-            System.setProperty("javax.net.ssl.keyStore", "/Users/apple/.wum3/products/wso2mi/4.0.0/wso2mi-4.0.0_http_core_testing/repository/resources/security/wso2carbon.jks");
-            System.setProperty("javax.net.ssl.keyStorePassword", "wso2carbon");
             ServerSocketFactory ssf = SSLServerSocketFactory.getDefault();
-            ServerSocket ss = ssf.createServerSocket(7000);
+            ss = ssf.createServerSocket(port);
+            System.out.println("SSL Server Started!");
 
             // Now enter an infinite loop, waiting for & handling connections.
             for (;;) {
@@ -68,8 +65,7 @@ public class ClosesTheConnectionBeforeBackendSendsTheBodyHTTPS {
         }
         // If anything goes wrong, print an error message
         catch (Exception e) {
-            System.err.println(e);
-            System.err.println("Usage: java HttpMirror <port>");
+            System.err.println("Server shutdown!");
         }
     }
 }

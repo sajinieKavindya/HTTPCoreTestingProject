@@ -8,19 +8,15 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-public class SlowReadingHTTPS {
+public class SlowReadingHTTPS extends BackendServer {
 
-    public static void main(String[] args) {
-        String smallPayload = "{\"Hello\":\"World\"}";
-
+    public void run(int port, String content) throws Exception {
         try {
             // Create a ServerSocket to listen on that port.
-            //ServerSocketFactory ssf = ServerSocketFactory.getDefault();
-            System.setProperty("javax.net.ssl.keyStore",
-                    "/Users/shefandarren/Documents/dbgermany/wso2am-4.0.0/repository/resources/security/wso2carbon.jks");
-            System.setProperty("javax.net.ssl.keyStorePassword", "wso2carbon");
             ServerSocketFactory ssf = SSLServerSocketFactory.getDefault();
-            ServerSocket ss = ssf.createServerSocket(7005);
+            ss = ssf.createServerSocket(port);
+            System.out.println("SSL Server Started!");
+
             ss.setReceiveBufferSize(3);
 
             // Now enter an infinite loop, waiting for & handling connections.
@@ -60,11 +56,11 @@ public class SlowReadingHTTPS {
                 out.print("Content-Type: application/json\r\n");
                 out.print("Date: Tue, 14 Dec 2021 08:15:17 GMT\r\n");
                 //out.print("Transfer-Encoding: chunked\r\n");
-                out.print("Content-Length: " + smallPayload.getBytes().length + "\r\n");; // The type of data
+                out.print("Content-Length: " + content.getBytes().length + "\r\n");; // The type of data
                 //out.print("Content-Length: 10\r\n");; // The type of data
                 out.print("Connection: Close\r\n");
                 out.print("\r\n"); // End of headers
-                out.print(smallPayload + "\r\n");
+                out.print(content + "\r\n");
 
                 out.flush();
                 in.close();
@@ -74,8 +70,7 @@ public class SlowReadingHTTPS {
         }
         // If anything goes wrong, print an error message
         catch (Exception e) {
-            System.err.println(e);
-            System.err.println("Usage: java HttpMirror <port>");
+            System.err.println("Server shutdown!");
         }
     }
 }

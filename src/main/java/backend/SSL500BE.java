@@ -13,23 +13,13 @@ import java.net.Socket;
 import java.net.URISyntaxException;
 import java.net.URL;
 
-public class SSL500BE {
+public class SSL500BE extends BackendServer {
 
-    public static void main(String[] args) throws Exception {
-
-        File file = getFile("payload-large.json");
-        String content = FileUtils.readFileToString(file, "UTF-8");
-
-        String line4 = "{\"Hello\":\"World\"}";
-        content = line4;
-
-        // System.out.println(content);
-
+    public void run(int port, String content) throws Exception {
         try {
-            System.setProperty("javax.net.ssl.keyStore", "/Users/apple/.wum3/products/wso2mi/4.0.0/wso2mi-4.0.0_http_core_testing/repository/resources/security/wso2carbon.jks");
-            System.setProperty("javax.net.ssl.keyStorePassword", "wso2carbon");
+            // Create a ServerSocket to listen on that port.
             ServerSocketFactory ssf = SSLServerSocketFactory.getDefault();
-            ServerSocket ss = ssf.createServerSocket(7005);
+            ss = ssf.createServerSocket(port);
             System.out.println("SSL Server Started!");
 
             do {

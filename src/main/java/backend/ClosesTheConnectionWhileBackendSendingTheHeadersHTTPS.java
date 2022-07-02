@@ -12,20 +12,14 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-public class ClosesTheConnectionWhileBackendSendingTheHeadersHTTPS {
-    public static void main(String[] args) {
+public class ClosesTheConnectionWhileBackendSendingTheHeadersHTTPS extends BackendServer {
+
+    public void run(int port, String content) throws Exception {
         try {
-            File file = Utils.getFile("payload-large.json");
-            String content = FileUtils.readFileToString(file, "UTF-8");
-
-            String line4 = "{\"Hello\":\"World\"}";
-            content = line4;
-
             // Create a ServerSocket to listen on that port.
-            System.setProperty("javax.net.ssl.keyStore", "/Users/apple/.wum3/products/wso2mi/4.0.0/wso2mi-4.0.0_http_core_testing/repository/resources/security/wso2carbon.jks");
-            System.setProperty("javax.net.ssl.keyStorePassword", "wso2carbon");
             ServerSocketFactory ssf = SSLServerSocketFactory.getDefault();
-            ServerSocket ss = ssf.createServerSocket(7000);
+            ss = ssf.createServerSocket(port);
+            System.out.println("SSL Server Started!");
 
             // Now enter an infinite loop, waiting for & handling connections.
             for (;;) {
@@ -80,8 +74,7 @@ public class ClosesTheConnectionWhileBackendSendingTheHeadersHTTPS {
         }
         // If anything goes wrong, print an error message
         catch (Exception e) {
-            System.err.println(e);
-            System.err.println("Usage: java HttpMirror <port>");
+            System.err.println("Server shutdown!");
         }
     }
 }

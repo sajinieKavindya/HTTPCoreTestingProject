@@ -8,28 +8,21 @@ import java.net.Socket;
 
 import javax.net.ServerSocketFactory;
 
-public class WaitsUntilResponseDone {
+public class WaitsUntilResponseDone extends BackendServer {
 
-    public static void main(String[] args) {
+    public void run(int port, String content) throws Exception {
 
         try {
-            // Get the port to listen on
-            //int port = Integer.parseInt(args[0]);
             // Create a ServerSocket to listen on that port.
-            //System.setProperty("javax.net.ssl.keyStore", "/Users/shefandarren/Documents/dbgermany/wso2am-4.0.0/repository/resources/security/wso2carbon.jks");
-            //System.setProperty("javax.net.ssl.keyStorePassword", "wso2carbon");
-            //ServerSocketFactory ssf = SSLServerSocketFactory.getDefault();
             ServerSocketFactory ssf = ServerSocketFactory.getDefault();
-            //String line4 = "{\"request\":{\"productCode\":\"NGGENDOMPAY,NGASIALOCALPAY\",\"Request-ID\":\"REQ-95e66d46-206f-410d-901b-0486fccb4728\",\"dbeBridgeAccountNumber\":\"1524941000\",\"status\":\"Active\"},\"data\":[{\"status\":\"Active\",\"updatedDate\":\"2022-05-24 11:33:20\",\"accountType\":\"CCY\",\"mandateType\":\"DBDI\",\"mandateId\":\"gtbmandate.ap\",\"companyShortName\":\"bafircomp\",\"companyCrdsId\":null,\"mainAccountNumber\":\"1524941\",\"dbdiAccountNumber\":null,\"masterAccountNumber\":null,\"dbeBridgeAccountNumber\":\"1524941000\",\"iban\":null,\"tag25\":\"1524941-00-0\",\"branchBicPlusKey\":\"IN001168\",\"swiftCode\":\"DEUTINBBDEL\",\"masterNumber\":\"10052006\",\"accountLinkedProduct\":\"NGASIALOCALPAY\",\"accountLinkedProductStatus\":\"Disabled\",\"accountLinkedProductFeatures\":[{\"feature\":\"ExcludeE2EID\",\"status\":\"Disabled\"}]},{\"status\":\"Active\",\"updatedDate\":\"2022-03-23 10:36:31\",\"accountType\":\"CCY\",\"mandateType\":\"DBDI\",\"mandateId\":\"gtbmandate.ap\",\"companyShortName\":\"bafircomp\",\"companyCrdsId\":null,\"mainAccountNumber\":\"1524941\",\"dbdiAccountNumber\":null,\"masterAccountNumber\":null,\"dbeBridgeAccountNumber\":\"1524941000\",\"iban\":null,\"tag25\":\"1524941-00-0\",\"branchBicPlusKey\":\"IN001168\",\"swiftCode\":\"DEUTINBBDEL\",\"masterNumber\":\"10052006\",\"accountLinkedProduct\":\"NGGENDOMPAY\",\"accountLinkedProductStatus\":\"Disabled\",\"accountLinkedProductFeatures\":[{\"feature\":\"ACCEPTGIRO\",\"status\":\"Disabled\"},{\"feature\":\"AUTOROLLOVER\",\"status\":\"Disabled\"},{\"feature\":\"DOMSO\",\"status\":\"Disabled\"},{\"feature\":\"ESCONFIRM\",\"status\":\"Disabled\"},{\"feature\":\"FSC\",\"status\":\"Disabled\"},{\"feature\":\"SEPADDB2B\",\"status\":\"Disabled\"},{\"feature\":\"SEPADDCORE\",\"status\":\"Disabled\"},{\"feature\":\"SEPAINDP\",\"status\":\"Disabled\"},{\"feature\":\"TESTSEPA\",\"status\":\"Disabled\"},{\"feature\":\"test feat\",\"status\":\"Disabled\"}]}]}";
-            String line4 = "{\"Hello\":\"World\"}";
+            ss = ssf.createServerSocket(port);
+            System.out.println("Server Started!");
 
-            ServerSocket ss = ssf.createServerSocket(7000);
-            //ServerSocket ss = new ServerSocket(7000);
-            // Now enter an infinite loop, waiting for & handling connections.
             for (; ; ) {
                 // Wait for a client to connect. The method will block;
                 // when it returns the socket will be connected to the client
                 Socket client = ss.accept();
+                System.out.println("Received a request to backend!");
 
                 // Get input and output streams to talk to the client
                 BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()));
@@ -49,7 +42,6 @@ public class WaitsUntilResponseDone {
                 PrintWriter out = new PrintWriter(client.getOutputStream());
 
                 // Start sending our reply, using the HTTP 1.1 protocol
-                //out.print(0 + "\r\n");
                 out.print("HTTP/1.1 200 OK\r\n"); // Version & status code
                 out.print("Access-Control-Expose-Headers:\r\n");
                 out.print("Access-Control-Allow-Origin: *\r\n");
@@ -59,39 +51,19 @@ public class WaitsUntilResponseDone {
                 out.print("Content-Type: application/json\r\n");
                 out.print("Date: Tue, 14 Dec 2021 08:15:17 GMT\r\n");
                 out.print("Transfer-Encoding: chunked\r\n");
-                out.print("Content-Length:  " + line4.getBytes().length + "\r\n");
-                ; // The type of data
+                out.print("Content-Length:  " + content.getBytes().length + "\r\n");
                 out.print("Connection: Close\r\n");
                 out.print("\r\n"); // End of headers
-                //out.flush();
-                //System.exit(-1);
-                // Now, read the HTTP request from the client, and send it
-                // right back to the client as part of the body of our
-                // response. The client doesn't disconnect, so we never get
-                // an EOF. It does sends an empty line at the end of the
-                // headers, though. So when we see the empty line, we stop
-                // reading. This means we don't mirror the contents of POST
-                // requests, for example. Note that the readLine() method
-                // works with Unix, Windows, and Mac line terminators.
-                //out.flush();
-
-                //out.flush();
-                out.print("6ac" + "\r\n");
-                out.print(line4 + "\r\n");
-                //out.print(0+"\r\n");
-                //out.flush();
-                //out.flush();
-                // Close socket, breaking the connection to the client, and
-                // closing the input and output streams
+                out.print(content + "\r\n");
                 out.close(); // Flush and close the output stream
-                //in.close(); // Close the input stream
+                in.close(); // Close the input stream
                 client.close(); // Close the socket itself
+                System.out.println("Sent a response to MI server!");
             } // Now loop again, waiting for the next connection
         }
         // If anything goes wrong, print an error message
         catch (Exception e) {
-            System.err.println(e);
-            System.err.println("Usage: java HttpMirror <port>");
+            System.err.println("Server shutdown!");
         }
     }
 }

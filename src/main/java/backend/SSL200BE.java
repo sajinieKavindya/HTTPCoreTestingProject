@@ -14,32 +14,17 @@ import java.net.URL;
 import javax.net.ServerSocketFactory;
 import javax.net.ssl.SSLServerSocketFactory;
 
-public class SSL200BE {
+public class SSL200BE extends BackendServer {
 
-    public static void main(String[] args) throws Exception {
-
-        SSL200BE echoSSL = new SSL200BE();
-
-        File file = Utils.getFile("payload-large.json");
-
-        String content = FileUtils.readFileToString(file, "UTF-8");
-
-        String line4 = "{\"Hello\":\"World\"}";
-        content = line4;
-
-        // System.out.println(content);
-
+    public void run(int port, String content) throws Exception {
         try {
-            System.setProperty("javax.net.ssl.keyStore",
-                    "/Users/nirothipan/Desktop/trash/http-core-testing/" + "wso2mi-4.0.0/repository/resources" +
-                            "/security/wso2carbon.jks");
-            System.setProperty("javax.net.ssl.keyStorePassword", "wso2carbon");
-            ServerSocketFactory serverSocketFactory = SSLServerSocketFactory.getDefault();
-            ServerSocket serverSocket = serverSocketFactory.createServerSocket(7001);
+            // Create a ServerSocket to listen on that port.
+            ServerSocketFactory ssf = SSLServerSocketFactory.getDefault();
+            ss = ssf.createServerSocket(port);
             System.out.println("SSL Echo Server Started!");
 
             do {
-                Socket client = serverSocket.accept();
+                Socket client = ss.accept();
                 BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()));
 
                 StringBuilder sb = new StringBuilder();

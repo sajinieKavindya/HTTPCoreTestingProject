@@ -41,8 +41,7 @@ public class BackendClosesTheConnectionWhileMISendingTheRequestBody {
         }
         // If anything goes wrong, print an error message
         catch (Exception e) {
-            System.err.println(e);
-            System.err.println("Usage: java HttpMirror <port>");
+            System.err.println("Server shutdown!");
         }
     }
 }
