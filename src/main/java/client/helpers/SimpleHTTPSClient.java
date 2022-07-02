@@ -1,7 +1,10 @@
 package client.helpers;
 
+import client.ClientMain;
+
+import javax.net.ssl.*;
 import java.io.*;
-import java.net.Socket;
+import java.security.KeyStore;
 
 public class SimpleHTTPSClient {
 
@@ -18,20 +21,54 @@ public class SimpleHTTPSClient {
         this.port = port;
     }
 
+    // Create the and initialize the SSLContext
+    private SSLContext createSSLContext() {
+
+        try {
+            KeyStore keyStore = KeyStore.getInstance("JKS");
+            keyStore.load(new FileInputStream(ClientMain.keyStoreLocation), ClientMain.keyStorePassword.toCharArray());
+
+            // Create key manager
+            KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance("SunX509");
+            keyManagerFactory.init(keyStore, "wso2carbon".toCharArray());
+            KeyManager[] km = keyManagerFactory.getKeyManagers();
+
+            // Create trust manager
+            TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance("SunX509");
+            trustManagerFactory.init(keyStore);
+            TrustManager[] tm = trustManagerFactory.getTrustManagers();
+
+            // Initialize SSLContext
+            SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
+            sslContext.init(km, tm, null);
+
+            return sslContext;
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+
+        return null;
+    }
+
     // Start to run the server
     public void run(String payload, RequestMethods method, String authorizationHeader, boolean enableChunking) {
 
-        try {
-            // Create socket
-            Socket socket = new Socket(this.host, this.port);
+        SSLContext sslContext = this.createSSLContext();
 
-            InputStream inputStream = socket.getInputStream();
-            OutputStream outputStream = socket.getOutputStream();
+        try {
+            // Create socket factory
+            SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
+
+            // Create socket
+            SSLSocket sslSocket = (SSLSocket) sslSocketFactory.createSocket(this.host, this.port);
+
+            InputStream inputStream = sslSocket.getInputStream();
+            OutputStream outputStream = sslSocket.getOutputStream();
 
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
             PrintWriter printWriter = new PrintWriter(new OutputStreamWriter(outputStream));
 
-            socket.setSendBufferSize(25000);
+            sslSocket.setSendBufferSize(25000);
             // Write data
             System.out.println("Client sending a request!");
 
@@ -64,7 +101,7 @@ public class SimpleHTTPSClient {
             printWriter.close();
             bufferedReader.close();
             System.out.println("Closing the client connection!");
-            socket.close();
+            sslSocket.close();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
