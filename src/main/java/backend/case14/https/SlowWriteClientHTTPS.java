@@ -11,8 +11,8 @@ import java.security.KeyStore;
 
 public class SlowWriteClientHTTPS {
 
-    private String host = "localhost";
-    private int port = 8253;
+    private String host;
+    private int port;
     public static final String CRLF = "\r\n";
 
     public SlowWriteClientHTTPS() {
@@ -86,7 +86,7 @@ public class SlowWriteClientHTTPS {
             PrintStream printWriter = new PrintStream(sslSocket.getOutputStream());
             // Write data
 
-            printWriter.print("POST /test HTTP/1.1\r\n");
+            printWriter.print("POST /test/1.0.0 HTTP/1.1\r\n");
             printWriter.print("Accept: application/json\r\n");
             printWriter.print(authorizationHeader +"\r\n");
             printWriter.print("Connection: keep-alive\r\n");

@@ -5,8 +5,8 @@ import java.net.Socket;
 
 public class SimpleHTTPClient {
 
-    private String host = "localhost";
-    private int port = 8290;
+    private String host;
+    private int port;
 
     public SimpleHTTPClient() {
 
@@ -19,7 +19,7 @@ public class SimpleHTTPClient {
     }
 
     // Start to run the server
-    public void run(String payload, RequestMethods method, boolean enableChunking) {
+    public void run(String payload, RequestMethods method, String authorizationHeader, boolean enableChunking) {
 
         try {
             // Create socket
@@ -35,9 +35,10 @@ public class SimpleHTTPClient {
             // Write data
             System.out.println("Client sending a request!");
 
-            printWriter.print(method + " /test HTTP/1.1\r\n");
+            printWriter.print(method + " /test/1.0.0 HTTP/1.1\r\n");
             printWriter.print("Accept: application/json\r\n");
             printWriter.print("Connection: keep-alive\r\n");
+            printWriter.print(authorizationHeader + "\r\n");
             if (!method.equals(RequestMethods.GET)) {
                 if (enableChunking) {
                     printWriter.print("Transfer-Encoding: chunked\n");

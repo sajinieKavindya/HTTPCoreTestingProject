@@ -5,8 +5,8 @@ import java.net.Socket;
 
 public class SimpleHTTPSClient {
 
-    private String host = "localhost";
-    private int port = 8290;
+    private String host;
+    private int port;
 
     public SimpleHTTPSClient() {
 
@@ -35,7 +35,7 @@ public class SimpleHTTPSClient {
             // Write data
             System.out.println("Client sending a request!");
 
-            printWriter.print(method + " /test HTTP/1.1\r\n");
+            printWriter.print(method + " /test/1.0.0 HTTP/1.1\r\n");
             printWriter.print("Accept: application/json\r\n");
             printWriter.print("Connection: keep-alive\r\n");
             printWriter.print(authorizationHeader + "\r\n");

@@ -38,7 +38,7 @@ public class SlowWriteClient {
             PrintStream printWriter = new PrintStream(socket.getOutputStream());
             // Write data
 
-            printWriter.print("POST /test HTTP/1.1\r\n");
+            printWriter.print("POST /test/1.0.0 HTTP/1.1\r\n");
             printWriter.print("Accept: application/json\r\n");
             printWriter.print("Connection: keep-alive\r\n");
             printWriter.print("Transfer-Encoding: chunked\n");
